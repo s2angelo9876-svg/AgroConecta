@@ -1,0 +1,39 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-poppins), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", sans-serif;
+
+  /* Verdes AgroConecta */
+  --color-agro-50: #eef6ec;
+  --color-agro-100: #d8ead2;
+  --color-agro-200: #b5d6ac;
+  --color-agro-300: #8abb7e;
+  --color-agro-400: #619e55;
+  --color-agro-500: #41823a;
+  --color-agro-600: #2e7d32;
+  --color-agro-700: #27692b;
+  --color-agro-800: #1b5e20;
+  --color-agro-900: #144a19;
+  --color-agro-950: #0c2f10;
+
+  /* Amarillo sol (CTAs y badges) */
+  --color-sun-300: #ffd54f;
+  --color-sun-400: #f9c513;
+  --color-sun-500: #eab308;
+  --color-sun-600: #ca8a04;
+
+  /* Fondos crema */
+  --color-cream-50: #faf8f1;
+  --color-cream-100: #f3efe3;
+  --color-cream-200: #e7e0cd;
+
+  /* Marrón tierra (acentos) */
+  --color-soil-500: #795548;
+  --color-soil-700: #5d4037;
+  --color-soil-800: #4e342e;
+}
+
+body {
+  @apply bg-cream-50 font-sans text-stone-800 antialiased;
+}
