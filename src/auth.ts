@@ -37,12 +37,35 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       id: "demo",
       name: "Cuenta demo",
       credentials: {
+        email: { label: "Email", type: "text" },
+        name: { label: "Nombre", type: "text" },
         role: { label: "Rol", type: "text" },
       },
+      // Demo: cualquier correo/contraseña funciona. Si el correo coincide con
+      // una cuenta demo se usa su perfil; si no, se crea una sesión temporal.
       authorize: async (credentials) => {
         const role: UserRole =
           credentials?.role === "agricultor" ? "agricultor" : "comprador";
-        return DEMO_USERS[role];
+        const email =
+          typeof credentials?.email === "string" && credentials.email.trim()
+            ? credentials.email.trim().toLowerCase()
+            : null;
+
+        if (!email) return DEMO_USERS[role];
+
+        const known = Object.values(DEMO_USERS).find((u) => u.email === email);
+        if (known) return known;
+
+        return {
+          id: `u-${email}`,
+          name:
+            (typeof credentials?.name === "string" &&
+              credentials.name.trim()) ||
+            email.split("@")[0],
+          email,
+          role,
+          image: null,
+        };
       },
     }),
   ],

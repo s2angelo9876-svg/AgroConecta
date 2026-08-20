@@ -1,7 +1,7 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { Sprout } from "lucide-react";
-import AuthButtons from "@/components/AuthButtons";
+import LoginForm from "@/components/LoginForm";
 
 export const metadata = { title: "Ingresar — AgroConecta" };
 
@@ -28,7 +28,7 @@ export default async function LoginPage({
             Inicia sesión para publicar tu cosecha o contactar agricultores.
           </p>
         </div>
-        <AuthButtons callbackUrl={callbackUrl ?? "/"} />
+        <LoginForm callbackUrl={callbackUrl ?? "/"} />
       </div>
     </section>
   );

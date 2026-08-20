@@ -13,11 +13,13 @@ import {
   MessageCircle,
   BadgeCheck,
   Heart,
+  ShoppingBag,
 } from "lucide-react";
 import { useProducts } from "@/components/ProductsProvider";
 import { findFarmer } from "@/data/mock";
 import QualityBadge from "@/components/QualityBadge";
 import ContactModal from "@/components/ContactModal";
+import CheckoutModal from "@/components/CheckoutModal";
 import { useFavorites } from "@/components/FavoritesProvider";
 
 export default function ProductDetailPage({
@@ -28,6 +30,7 @@ export default function ProductDetailPage({
   const { id } = use(params);
   const { products } = useProducts();
   const [contactOpen, setContactOpen] = useState(false);
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
   const { isFavorite, toggleFavorite } = useFavorites();
 
   const product = products.find((p) => p.id === id);
@@ -175,8 +178,14 @@ export default function ProductDetailPage({
 
           <div className="mt-6 flex flex-wrap gap-3">
             <button
-              onClick={() => setContactOpen(true)}
+              onClick={() => setCheckoutOpen(true)}
               className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-sun-400 px-6 py-3.5 font-bold text-stone-900 transition hover:bg-sun-300"
+            >
+              <ShoppingBag size={18} /> Comprar ahora
+            </button>
+            <button
+              onClick={() => setContactOpen(true)}
+              className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-agro-700 px-6 py-3.5 font-bold text-white transition hover:bg-agro-600"
             >
               <Phone size={18} /> Contactar
             </button>
@@ -195,6 +204,11 @@ export default function ProductDetailPage({
         onClose={() => setContactOpen(false)}
         farmerName={farmerName}
         phone={farmer?.phone}
+      />
+      <CheckoutModal
+        open={checkoutOpen}
+        onClose={() => setCheckoutOpen(false)}
+        product={product}
       />
     </section>
   );
