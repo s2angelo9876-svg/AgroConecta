@@ -1,5 +1,5 @@
+import Image from "next/image";
 import {
-  Sprout,
   Mail,
   Phone,
   Globe,
@@ -15,8 +15,14 @@ export default function Footer() {
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:px-6 md:grid-cols-3">
         <div>
           <div className="flex items-center gap-2">
-            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10">
-              <Sprout size={20} />
+            <span className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-white p-1">
+              <Image
+                src="/logo-mark.png"
+                alt="AgroConecta"
+                width={344}
+                height={250}
+                className="h-full w-auto object-contain"
+              />
             </span>
             <span className="text-xl font-extrabold">
               <span className="text-agro-200">Agro</span>

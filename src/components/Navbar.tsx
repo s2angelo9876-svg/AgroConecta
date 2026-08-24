@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { useState, useRef, useEffect } from "react";
 import {
-  Sprout,
   Menu,
   X,
   LogOut,
@@ -53,13 +52,22 @@ export default function Navbar() {
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
-          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-agro-600 text-white">
-            <Sprout size={20} />
-          </span>
-          <span className="text-xl font-extrabold tracking-tight">
-            <span className="text-agro-700">Agro</span>
-            <span className="text-sun-500">Conecta</span>
-          </span>
+          <Image
+            src="/logo-mark.png"
+            alt=""
+            width={344}
+            height={250}
+            className="h-9 w-auto"
+            priority
+          />
+          <Image
+            src="/logo-wordmark.png"
+            alt="AgroConecta"
+            width={799}
+            height={120}
+            className="h-5 w-auto"
+            priority
+          />
         </Link>
 
         {/* Navegación Desktop */}
