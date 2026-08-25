@@ -2,75 +2,71 @@
 
 import {
   createContext,
+  useCallback,
   useContext,
-  useEffect,
   useState,
   type ReactNode,
 } from "react";
-import { PRODUCTS, type Product } from "@/data/mock";
-
-const STORAGE_KEY = "agroconecta:products";
+import {
+  createProductAction,
+  deleteProductAction,
+} from "@/lib/actions/products";
+import type { ProductInput, UiProduct } from "@/lib/schemas";
 
 interface ProductsContextValue {
-  products: Product[];
-  addProduct: (product: Product) => void;
-  removeProduct: (id: string) => void;
+  products: UiProduct[];
+  addProduct: (
+    input: ProductInput
+  ) => Promise<{ ok: boolean; error?: string; product?: UiProduct }>;
+  removeProduct: (id: string) => Promise<{ ok: boolean; error?: string }>;
+  loading: boolean;
 }
 
 const ProductsContext = createContext<ProductsContextValue>({
-  products: PRODUCTS,
-  addProduct: () => {},
-  removeProduct: () => {},
+  products: [],
+  addProduct: async () => ({ ok: false }),
+  removeProduct: async () => ({ ok: false }),
+  loading: false,
 });
 
-/**
- * Fuente de datos del demo: productos mock + los publicados por el usuario
- * (persistidos en localStorage). Cuando se conecte el backend, basta con
- * reemplazar este provider por llamadas a la API.
- */
-export function ProductsProvider({ children }: { children: ReactNode }) {
-  const [localProducts, setLocalProducts] = useState<Product[]>([]);
+export function ProductsProvider({
+  initialProducts,
+  children,
+}: {
+  initialProducts: UiProduct[];
+  children: ReactNode;
+}) {
+  const [products, setProducts] = useState<UiProduct[]>(initialProducts);
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) setLocalProducts(JSON.parse(raw) as Product[]);
-    } catch {
-      // almacenamiento no disponible: el demo sigue funcionando con los mock
+  const addProduct = useCallback(
+    async (input: ProductInput) => {
+      setLoading(true);
+      const result = await createProductAction(input);
+      setLoading(false);
+      if (result.ok) {
+        setProducts((prev) => [result.data, ...prev]);
+        return { ok: true, product: result.data };
+      }
+      return { ok: false as const, error: result.error };
+    },
+    []
+  );
+
+  const removeProduct = useCallback(async (id: string) => {
+    setLoading(true);
+    const result = await deleteProductAction({ id });
+    setLoading(false);
+    if (result.ok) {
+      setProducts((prev) => prev.filter((p) => p.id !== id));
+      return { ok: true };
     }
+    return { ok: false, error: result.error };
   }, []);
-
-  const addProduct = (product: Product) => {
-    setLocalProducts((prev) => {
-      const next = [product, ...prev];
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-      } catch {
-        // sin persistencia, solo estado en memoria
-      }
-      return next;
-    });
-  };
-
-  const removeProduct = (id: string) => {
-    setLocalProducts((prev) => {
-      const next = prev.filter((p) => p.id !== id);
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-      } catch {
-        // sin persistencia
-      }
-      return next;
-    });
-  };
 
   return (
     <ProductsContext.Provider
-      value={{
-        products: [...localProducts, ...PRODUCTS],
-        addProduct,
-        removeProduct,
-      }}
+      value={{ products, addProduct, removeProduct, loading }}
     >
       {children}
     </ProductsContext.Provider>

@@ -1,14 +1,14 @@
-import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Sprout, Plus } from "lucide-react";
+import { getUser } from "@/lib/supabase/server";
 import MyProductsList from "@/components/MyProductsList";
 
 export const metadata = { title: "Mis publicaciones — AgroConecta" };
 
 export default async function MisPublicacionesPage() {
-  const session = await auth();
-  if (!session?.user) redirect("/login?callbackUrl=/mis-publicaciones");
+  const user = await getUser();
+  if (!user) redirect("/login?callbackUrl=/mis-publicaciones");
 
   return (
     <section className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
@@ -28,7 +28,7 @@ export default async function MisPublicacionesPage() {
           <Plus size={18} /> Publicar nuevo
         </Link>
       </div>
-      <MyProductsList userId={session.user.id ?? ""} userName={session.user.name ?? ""} />
+      <MyProductsList userId={user.id} />
     </section>
   );
 }

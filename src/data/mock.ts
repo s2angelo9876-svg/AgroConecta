@@ -1,3 +1,8 @@
+// ===========================================================
+// Datos mock (estaticos) usados mientras se conecta la DB.
+// En Fases 4-5 esto se reemplazará con datos de Supabase.
+// ===========================================================
+
 export type Quality = "Premium" | "Primera" | "Segunda";
 
 export interface Review {
@@ -30,20 +35,8 @@ export interface Farmer {
   cover: string;
 }
 
-export interface Product {
-  id: string;
-  name: string;
-  quantity: number;
-  unit: string;
-  price: number;
-  location: string;
-  harvestDate: string; // YYYY-MM-DD
-  quality: Quality;
-  image: string;
-  description: string;
-  farmerId: string;
-  farmerName?: string; // para publicaciones locales del demo
-}
+// (El tipo Product ya no se exporta desde aquí: la UI usa UiProduct
+// de @/lib/schemas, que viene de la base de datos.)
 
 const img = (id: string) =>
   `https://images.unsplash.com/${id}?auto=format&fit=crop&w=800&q=80`;
@@ -87,116 +80,6 @@ export const FARMERS: Farmer[] = [
     avatar: img("photo-1560250097-0b93528c311a"),
     phone: "+51 999 888 777",
     cover: img("photo-1500937386664-56d1dfef3854"),
-  },
-];
-
-export const PRODUCTS: Product[] = [
-  {
-    id: "p1",
-    name: "Palta Hass",
-    quantity: 500,
-    unit: "kg",
-    price: 4.5,
-    location: "Ica",
-    harvestDate: "2026-07-12",
-    quality: "Premium",
-    image: img("photo-1523049673857-eb18f1d7b578"),
-    description:
-      "Palta Hass de calidad exportación, cultivada en el valle de Ica. Pulpa cremosa, calibre uniforme, lista para empaque.",
-    farmerId: "f1",
-  },
-  {
-    id: "p2",
-    name: "Tomate",
-    quantity: 300,
-    unit: "kg",
-    price: 2.8,
-    location: "Pisco",
-    harvestDate: "2026-07-10",
-    quality: "Primera",
-    image: img("photo-1592924357228-91a4daadcfea"),
-    description:
-      "Tomate fresco, cultivado con abono orgánico. Ideal para ensaladas y cocina en general.",
-    farmerId: "f1",
-  },
-  {
-    id: "p3",
-    name: "Maíz Amarillo",
-    quantity: 1000,
-    unit: "kg",
-    price: 1.2,
-    location: "Chincha",
-    harvestDate: "2026-07-15",
-    quality: "Primera",
-    image: img("photo-1551754655-cd27e38d2076"),
-    description:
-      "Maíz amarillo duro, seco y seleccionado. Ideal para molienda y consumo directo.",
-    farmerId: "f1",
-  },
-  {
-    id: "p4",
-    name: "Limón",
-    quantity: 800,
-    unit: "kg",
-    price: 2.0,
-    location: "Ica",
-    harvestDate: "2026-08-01",
-    quality: "Primera",
-    image: img("photo-1590502593747-42a996133562"),
-    description: "Limón sutil con alto contenido de jugo, cosechado en su punto exacto.",
-    farmerId: "f2",
-  },
-  {
-    id: "p5",
-    name: "Cebolla Roja",
-    quantity: 2000,
-    unit: "kg",
-    price: 1.5,
-    location: "Chincha",
-    harvestDate: "2026-07-20",
-    quality: "Segunda",
-    image: img("photo-1518977956812-cd3dbadaaf31"),
-    description: "Cebolla roja de buen tamaño, curada y lista para almacenamiento.",
-    farmerId: "f2",
-  },
-  {
-    id: "p6",
-    name: "Mango",
-    quantity: 600,
-    unit: "kg",
-    price: 3.2,
-    location: "Ica",
-    harvestDate: "2026-08-05",
-    quality: "Premium",
-    image: img("photo-1553279768-865429fa0078"),
-    description: "Mango dulce variedad criolla, sin fibra, excelente para jugos y postres.",
-    farmerId: "f3",
-  },
-  {
-    id: "p7",
-    name: "Uva Red Globe",
-    quantity: 1200,
-    unit: "kg",
-    price: 5.0,
-    location: "Ica",
-    harvestDate: "2026-08-10",
-    quality: "Premium",
-    image: img("photo-1537640538966-79f369143f8f"),
-    description: "Uva Red Globe de mesa, racimos grandes y crocantes, calidad exportación.",
-    farmerId: "f3",
-  },
-  {
-    id: "p8",
-    name: "Zanahoria",
-    quantity: 400,
-    unit: "kg",
-    price: 1.8,
-    location: "Pisco",
-    harvestDate: "2026-07-25",
-    quality: "Primera",
-    image: img("photo-1598170845058-32b9d6a5da37"),
-    description: "Zanahoria fresca lavada y seleccionada, dulce y crocante.",
-    farmerId: "f2",
   },
 ];
 

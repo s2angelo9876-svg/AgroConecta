@@ -2,14 +2,17 @@
 
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
-import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { Tractor, ShoppingCart, UserPlus, Loader2 } from "lucide-react";
-import type { UserRole } from "@/types/next-auth";
+import { createClient } from "@/lib/supabase/client";
+import type { UserRole } from "@/hooks/useCurrentUser";
 
 const inputCls =
   "w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-agro-500 focus:ring-2 focus:ring-agro-100";
 
 export default function RegisterForm() {
+  const router = useRouter();
+  const supabase = createClient();
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -17,7 +20,7 @@ export default function RegisterForm() {
     password: "",
     confirm: "",
   });
-  const [role, setRole] = useState<UserRole>("agricultor");
+  const [role, setRole] = useState<Exclude<UserRole, "admin">>("agricultor");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -42,20 +45,41 @@ export default function RegisterForm() {
       setError("Las contraseñas no coinciden.");
       return;
     }
+
     setError("");
     setLoading(true);
-    // Demo: "crea la cuenta" e inicia sesión con ella
-    await signIn("demo", {
-      email: form.email,
-      name: form.name,
-      role,
-      callbackUrl: role === "agricultor" ? "/publicar" : "/",
+
+    const { error } = await supabase.auth.signUp({
+      email: form.email.trim(),
+      password: form.password,
+      options: {
+        data: {
+          full_name: form.name.trim(),
+          role,
+        },
+      },
     });
+
+    setLoading(false);
+
+    if (error) {
+      setError(
+        error.message.includes("already registered")
+          ? "Este correo ya está registrado. Inicia sesión."
+          : "No se pudo crear la cuenta. Intenta nuevamente."
+      );
+      return;
+    }
+
+    // Si tu proyecto Supabase requiere confirmación por email,
+    // Supabase no inicia sesión automáticamente. Aquí asumimos que el
+    // proyecto la tiene desactivada para el demo (Authentication > Sign In).
+    router.push(role === "agricultor" ? "/publicar" : "/");
+    router.refresh();
   };
 
   return (
     <form onSubmit={onSubmit} className="mt-8 space-y-4">
-      {/* Selector de rol (como en el mockup: Soy Agricultor / Soy Comprador) */}
       <div className="grid grid-cols-2 gap-3">
         <button
           type="button"
@@ -187,7 +211,7 @@ export default function RegisterForm() {
         </Link>
       </p>
       <p className="text-center text-xs text-stone-400">
-        Demo: la cuenta no se guarda en ningún servidor.
+        La cuenta se crea en Supabase (Postgres con RLS).
       </p>
     </form>
   );

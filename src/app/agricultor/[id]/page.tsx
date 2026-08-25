@@ -8,9 +8,11 @@ import {
   Star,
   ArrowLeft,
 } from "lucide-react";
-import { FARMERS, PRODUCTS, findFarmer, REVIEWS } from "@/data/mock";
+import { FARMERS, findFarmer, REVIEWS } from "@/data/mock";
+import { createClient } from "@/lib/supabase/server";
 import ProductCard from "@/components/ProductCard";
 import FarmerContact from "@/components/FarmerContact";
+import type { UiProduct } from "@/lib/schemas";
 
 export function generateStaticParams() {
   return FARMERS.map((f) => ({ id: f.id }));
@@ -25,7 +27,42 @@ export default async function FarmerPage({
   const farmer = findFarmer(id);
   if (!farmer) notFound();
 
-  const products = PRODUCTS.filter((p) => p.farmerId === farmer.id);
+  const supabase = await createClient();
+
+  // Buscar el farmer por nombre en profiles (los UUIDs de Supabase son distintos a f1/f2/f3)
+  // Como simplificación del demo: usamos el mock Farmer + buscamos productos del nombre.
+  const { data: farmerProfile } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("full_name", farmer.name)
+    .maybeSingle();
+
+  let products: UiProduct[] = [];
+  if (farmerProfile) {
+    const { data } = await supabase
+      .from("products")
+      .select("*, farmer:profiles!farmer_id(full_name)")
+      .eq("farmer_id", farmerProfile.id)
+      .eq("status", "active")
+      .order("created_at", { ascending: false })
+      .limit(50);
+    if (data) {
+      products = data.map((p: any) => ({
+        id: p.id,
+        name: p.name,
+        quantity: Number(p.quantity),
+        unit: p.unit,
+        price: Number(p.price),
+        location: p.location,
+        harvestDate: p.harvest_date,
+        quality: p.quality,
+        image: p.image_url || "/placeholder.png",
+        description: p.description || "",
+        farmerId: p.farmer_id,
+        farmerName: p.farmer?.full_name,
+      }));
+    }
+  }
 
   return (
     <section className="mx-auto max-w-6xl px-4 py-8 sm:px-6">

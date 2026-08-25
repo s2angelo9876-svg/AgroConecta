@@ -1,6 +1,6 @@
-import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import Image from "next/image";
+import { getUser } from "@/lib/supabase/server";
 import LoginForm from "@/components/LoginForm";
 
 export const metadata = { title: "Ingresar — AgroConecta" };
@@ -11,8 +11,8 @@ export default async function LoginPage({
   searchParams: Promise<{ callbackUrl?: string }>;
 }) {
   const { callbackUrl } = await searchParams;
-  const session = await auth();
-  if (session?.user) redirect(callbackUrl ?? "/");
+  const user = await getUser();
+  if (user) redirect(callbackUrl ?? "/");
 
   return (
     <section className="mx-auto flex max-w-md flex-col items-center px-4 py-16">

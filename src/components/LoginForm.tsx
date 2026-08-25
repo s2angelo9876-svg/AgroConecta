@@ -2,13 +2,17 @@
 
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
-import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { LogIn, Tractor, ShoppingCart, Loader2 } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import { ensureDemoAccount } from "@/lib/actions/demo";
 
 const inputCls =
   "w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-agro-500 focus:ring-2 focus:ring-agro-100";
 
 export default function LoginForm({ callbackUrl }: { callbackUrl: string }) {
+  const router = useRouter();
+  const supabase = createClient();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -22,8 +26,41 @@ export default function LoginForm({ callbackUrl }: { callbackUrl: string }) {
     }
     setError("");
     setLoading(true);
-    // Demo: cualquier correo/contraseña funciona
-    await signIn("demo", { email, callbackUrl });
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    });
+    setLoading(false);
+
+    if (error) {
+      setError("Credenciales inválidas o error al iniciar sesión.");
+      return;
+    }
+    router.push(callbackUrl);
+    router.refresh();
+  };
+
+  const quickLogin = async (role: "agricultor" | "comprador") => {
+    setError("");
+    setLoading(true);
+    const result = await ensureDemoAccount(role);
+    if (!result.ok) {
+      setLoading(false);
+      setError(result.error);
+      return;
+    }
+    const { error } = await supabase.auth.signInWithPassword({
+      email: result.email,
+      password: result.password,
+    });
+    setLoading(false);
+    if (error) {
+      setError("Cuenta creada pero no se pudo iniciar sesión.");
+      return;
+    }
+    router.push(callbackUrl);
+    router.refresh();
   };
 
   return (
@@ -91,13 +128,13 @@ export default function LoginForm({ callbackUrl }: { callbackUrl: string }) {
 
       <div className="mt-3 grid grid-cols-2 gap-3">
         <button
-          onClick={() => signIn("demo", { role: "agricultor", callbackUrl })}
+          onClick={() => quickLogin("agricultor")}
           className="flex items-center justify-center gap-2 rounded-xl border-2 border-agro-200 bg-agro-50 px-3 py-2.5 text-xs font-bold text-agro-800 transition hover:bg-agro-100"
         >
           <Tractor size={16} /> Agricultor
         </button>
         <button
-          onClick={() => signIn("demo", { role: "comprador", callbackUrl })}
+          onClick={() => quickLogin("comprador")}
           className="flex items-center justify-center gap-2 rounded-xl border-2 border-sun-400 bg-sun-300/30 px-3 py-2.5 text-xs font-bold text-yellow-800 transition hover:bg-sun-300/50"
         >
           <ShoppingCart size={16} /> Comprador
@@ -105,7 +142,8 @@ export default function LoginForm({ callbackUrl }: { callbackUrl: string }) {
       </div>
 
       <p className="mt-4 text-center text-xs text-stone-400">
-        Demo: cualquier correo y contraseña funcionan.
+        Demo: cualquier correo y contraseña funcionan (se crea la cuenta al
+        primer inicio).
       </p>
     </div>
   );

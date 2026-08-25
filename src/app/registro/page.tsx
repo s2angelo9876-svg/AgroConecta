@@ -1,13 +1,13 @@
-import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import Image from "next/image";
+import { getUser } from "@/lib/supabase/server";
 import RegisterForm from "@/components/RegisterForm";
 
 export const metadata = { title: "Crear cuenta — AgroConecta" };
 
 export default async function RegistroPage() {
-  const session = await auth();
-  if (session?.user) redirect("/");
+  const user = await getUser();
+  if (user) redirect("/");
 
   return (
     <section className="mx-auto flex max-w-md flex-col items-center px-4 py-16">

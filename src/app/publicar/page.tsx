@@ -1,13 +1,13 @@
-import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { Sprout } from "lucide-react";
+import { getUser } from "@/lib/supabase/server";
 import PublishForm from "@/components/PublishForm";
 
 export const metadata = { title: "Publicar mi cosecha — AgroConecta" };
 
 export default async function PublicarPage() {
-  const session = await auth();
-  if (!session?.user) redirect("/login?callbackUrl=/publicar");
+  const user = await getUser();
+  if (!user) redirect("/login?callbackUrl=/publicar");
 
   return (
     <section className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
@@ -18,10 +18,7 @@ export default async function PublicarPage() {
         Completa los datos de tu producto para que los compradores te
         encuentren.
       </p>
-      <PublishForm
-        userId={session.user.id ?? "f1"}
-        userName={session.user.name ?? "Agricultor"}
-      />
+      <PublishForm />
     </section>
   );
 }

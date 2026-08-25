@@ -2,18 +2,18 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useSession } from "next-auth/react";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { MOCK_CONVERSATIONS } from "@/data/conversations";
 import { MessageCircle } from "lucide-react";
 
 export default function MensajesPage() {
-  const { data: session } = useSession();
+  const { user } = useCurrentUser();
 
   return (
     <section className="mx-auto max-w-2xl px-4 py-10 sm:px-6">
       <h1 className="text-2xl font-extrabold text-agro-800">Mensajes</h1>
       <p className="mt-1 text-sm text-stone-500">
-        {session?.user
+        {user
           ? "Tus conversaciones con agricultores y compradores."
           : "Inicia sesión para ver tus mensajes."}
       </p>

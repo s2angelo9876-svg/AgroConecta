@@ -9,7 +9,7 @@ import {
   Loader2,
   ShieldCheck,
 } from "lucide-react";
-import type { Product } from "@/data/mock";
+import type { UiProduct } from "@/lib/schemas";
 import FakeQR from "./FakeQR";
 
 type Method = "tarjeta" | "yape" | "plin";
@@ -46,7 +46,7 @@ export default function CheckoutModal({
 }: {
   open: boolean;
   onClose: () => void;
-  product: Product;
+  product: UiProduct;
 }) {
   const [method, setMethod] = useState<Method>("yape");
   const [quantity, setQuantity] = useState(1);

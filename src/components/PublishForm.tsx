@@ -2,6 +2,7 @@
 
 import { useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Star,
   Leaf,
@@ -15,55 +16,44 @@ import {
   PRODUCT_IMAGES,
   DEFAULT_PRODUCT_IMAGE,
   LOCATIONS,
-  type Product,
-  type Quality,
 } from "@/data/mock";
 import { useProducts } from "./ProductsProvider";
 
-const QUALITIES: {
-  value: Quality;
-  label: string;
-  desc: string;
-  Icon: typeof Star;
-}[] = [
-  { value: "Premium", label: "Premium", desc: "La mejor calidad", Icon: Star },
-  { value: "Primera", label: "Primera", desc: "Buena calidad", Icon: Leaf },
-  { value: "Segunda", label: "Segunda", desc: "Calidad estándar", Icon: Circle },
+const QUALITIES = [
+  { value: "Premium" as const, label: "Premium", desc: "La mejor calidad", Icon: Star },
+  { value: "Primera" as const, label: "Primera", desc: "Buena calidad", Icon: Leaf },
+  { value: "Segunda" as const, label: "Segunda", desc: "Calidad estándar", Icon: Circle },
 ];
 
 const inputCls =
   "w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-agro-500 focus:ring-2 focus:ring-agro-100";
 
-export default function PublishForm({
-  userId,
-  userName,
-}: {
-  userId: string;
-  userName: string;
-}) {
-  const { addProduct } = useProducts();
+export default function PublishForm() {
+  const router = useRouter();
+  const { addProduct, loading } = useProducts();
   const [form, setForm] = useState({
     product: "",
     quantity: "",
     price: "",
     harvestDate: "",
     location: "",
-    quality: "Premium" as Quality,
+    quality: "Premium" as "Premium" | "Primera" | "Segunda",
   });
   const [preview, setPreview] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [publishedId, setPublishedId] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const update = (key: keyof typeof form) => (value: string) =>
-    setForm((f) => ({ ...f, [key]: value }));
+  const update = <K extends keyof typeof form>(key: K) =>
+    (value: (typeof form)[K]) =>
+      setForm((f) => ({ ...f, [key]: value }));
 
   const onFile = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) setPreview(URL.createObjectURL(file));
   };
 
-  const onSubmit = (e: FormEvent) => {
+  const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (
       !form.product ||
@@ -75,23 +65,27 @@ export default function PublishForm({
       setError("Completa todos los campos obligatorios.");
       return;
     }
-    const id = `local-${Date.now()}`;
-    const product: Product = {
-      id,
+    setError("");
+
+    const image_url = PRODUCT_IMAGES[form.product] ?? DEFAULT_PRODUCT_IMAGE;
+
+    const result = await addProduct({
       name: form.product,
       quantity: Number(form.quantity),
       unit: "kg",
       price: Number(form.price),
+      harvest_date: form.harvestDate,
       location: form.location,
-      harvestDate: form.harvestDate,
       quality: form.quality,
-      image: PRODUCT_IMAGES[form.product] ?? DEFAULT_PRODUCT_IMAGE,
-      description: `${form.product} fresco, recién cosechado. Publicado por ${userName}.`,
-      farmerId: userId,
-      farmerName: userName,
-    };
-    addProduct(product);
-    setPublishedId(id);
+      image_url,
+    });
+
+    if (!result.ok) {
+      setError(result.error ?? "No se pudo publicar la cosecha.");
+      return;
+    }
+
+    if (result.product) setPublishedId(result.product.id);
   };
 
   if (publishedId) {
@@ -102,8 +96,7 @@ export default function PublishForm({
           ¡Tu cosecha fue publicada!
         </h2>
         <p className="mx-auto mt-2 max-w-sm text-sm text-stone-500">
-          Demo: la publicación se guarda en este navegador (localStorage) hasta
-          que se conecte el backend.
+          Se guardó en la base de datos (Supabase) y ya aparece en el catálogo.
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-3">
           <Link
@@ -271,7 +264,7 @@ export default function PublishForm({
             <Camera size={28} className="text-stone-400" />
           )}
           {preview ? "Cambiar fotografía" : "Agregar fotografía"}
-          <span className="text-xs">Máx. 5 fotos (demo)</span>
+          <span className="text-xs">Demo: la foto se previsualiza pero no se sube al servidor.</span>
         </button>
         <input
           ref={fileRef}
@@ -290,12 +283,13 @@ export default function PublishForm({
 
       <button
         type="submit"
-        className="flex items-center justify-center gap-2 rounded-xl bg-sun-400 py-3.5 font-bold text-stone-900 shadow-sm transition hover:bg-sun-300 sm:col-span-2"
+        disabled={loading}
+        className="flex items-center justify-center gap-2 rounded-xl bg-sun-400 py-3.5 font-bold text-stone-900 shadow-sm transition hover:bg-sun-300 disabled:opacity-60 sm:col-span-2"
       >
         <CloudUpload size={20} /> Publicar
       </button>
       <p className="text-center text-xs text-stone-400 sm:col-span-2">
-        Demo: la publicación se guarda en tu navegador.
+        Se envía por Server Action → Supabase (RLS valida que seas el dueño).
       </p>
     </form>
   );

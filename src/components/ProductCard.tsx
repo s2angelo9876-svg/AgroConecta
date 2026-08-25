@@ -4,7 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { MapPin, MessageCircle, Heart } from "lucide-react";
-import type { Farmer, Product } from "@/data/mock";
+import type { Farmer } from "@/data/mock";
+import type { UiProduct } from "@/lib/schemas";
 import QualityBadge from "./QualityBadge";
 import ContactModal from "./ContactModal";
 import { useFavorites } from "./FavoritesProvider";
@@ -13,7 +14,7 @@ export default function ProductCard({
   product,
   farmer,
 }: {
-  product: Product;
+  product: UiProduct;
   farmer?: Farmer;
 }) {
   const [contactOpen, setContactOpen] = useState(false);

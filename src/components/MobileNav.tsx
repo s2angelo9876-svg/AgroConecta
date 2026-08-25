@@ -2,15 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useSession } from "next-auth/react";
 import { Home, Search, PlusCircle, MessageCircle, User } from "lucide-react";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 const TAB =
   "flex flex-col items-center gap-0.5 px-2 py-1 text-[10px] font-bold transition";
 
 export default function MobileNav() {
   const pathname = usePathname();
-  const { data: session } = useSession();
+  const { user } = useCurrentUser();
 
   const active = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href);
@@ -46,11 +46,11 @@ export default function MobileNav() {
           Mensajes
         </Link>
         <Link
-          href={session?.user ? "/perfil" : "/login"}
+          href={user ? "/perfil" : "/login"}
           className={`${TAB} ${active("/perfil") || active("/login") ? "text-agro-700" : "text-stone-400"}`}
         >
           <User size={22} />
-          {session?.user ? "Perfil" : "Ingresar"}
+          {user ? "Perfil" : "Ingresar"}
         </Link>
       </div>
     </nav>

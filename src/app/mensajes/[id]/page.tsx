@@ -3,7 +3,7 @@
 import { use, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useSession } from "next-auth/react";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { ArrowLeft, Send } from "lucide-react";
 import { MOCK_CONVERSATIONS, type Message } from "@/data/conversations";
 
@@ -13,7 +13,7 @@ export default function ChatPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const { data: session } = useSession();
+  const { user, profile } = useCurrentUser();
   const conversation = MOCK_CONVERSATIONS.find((c) => c.id === id);
 
   const [messages, setMessages] = useState<Message[]>(
@@ -53,7 +53,7 @@ export default function ChatPage({
     setText("");
   };
 
-  const otherName = session?.user?.name === conversation.name
+  const otherName = profile?.full_name === conversation.name
     ? "Tú"
     : conversation.name;
 

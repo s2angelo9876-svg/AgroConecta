@@ -1,23 +1,20 @@
 "use client";
 
-import { SessionProvider } from "next-auth/react";
-import type { Session } from "next-auth";
 import type { ReactNode } from "react";
 import { ProductsProvider } from "./ProductsProvider";
 import { FavoritesProvider } from "./FavoritesProvider";
+import type { UiProduct } from "@/lib/schemas";
 
 export default function Providers({
-  session,
+  initialProducts,
   children,
 }: {
-  session: Session | null;
+  initialProducts: UiProduct[];
   children: ReactNode;
 }) {
   return (
-    <SessionProvider session={session}>
-      <ProductsProvider>
-        <FavoritesProvider>{children}</FavoritesProvider>
-      </ProductsProvider>
-    </SessionProvider>
+    <ProductsProvider initialProducts={initialProducts}>
+      <FavoritesProvider>{children}</FavoritesProvider>
+    </ProductsProvider>
   );
 }

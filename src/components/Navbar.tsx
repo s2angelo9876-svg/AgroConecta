@@ -3,8 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { useSession, signOut } from "next-auth/react";
-import { useState, useRef, useEffect } from "react";
+import { useState, type MouseEvent } from "react";
 import {
   Menu,
   X,
@@ -15,6 +14,8 @@ import {
   User,
 } from "lucide-react";
 import NotificationsDropdown from "./NotificationsDropdown";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { createClient } from "@/lib/supabase/client";
 
 const LINKS = [
   { href: "/", label: "Inicio" },
@@ -24,28 +25,21 @@ const LINKS = [
 
 export default function Navbar() {
   const pathname = usePathname();
-  const { data: session, status } = useSession();
+  const { user, profile, loading } = useCurrentUser();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userOpen, setUserOpen] = useState(false);
-
-  // Referencia para cerrar el menú desplegable si se hace clic fuera de él
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setUserOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  const supabase = createClient();
 
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href);
+
+  const handleSignOut = async (e: MouseEvent) => {
+    e.preventDefault();
+    setUserOpen(false);
+    setMobileOpen(false);
+    await supabase.auth.signOut();
+    window.location.href = "/";
+  };
 
   return (
     <header className="sticky top-0 z-40 border-b border-cream-200 bg-white/90 backdrop-blur">
@@ -70,7 +64,7 @@ export default function Navbar() {
           />
         </Link>
 
-        {/* Navegación Desktop */}
+        {/* Desktop nav */}
         <nav className="hidden items-center gap-1 md:flex">
           {LINKS.map((link) => (
             <Link
@@ -87,37 +81,33 @@ export default function Navbar() {
           ))}
         </nav>
 
-        {/* Usuario / Auth Status */}
+        {/* Right area */}
         <div className="hidden items-center gap-2 md:flex">
           <NotificationsDropdown />
-          
-          {status === "loading" ? (
+          {loading ? (
             <div className="h-9 w-28 animate-pulse rounded-full bg-cream-100" />
-          ) : session?.user ? (
-            <div className="relative" ref={dropdownRef}>
+          ) : user && profile ? (
+            <div className="relative">
               <button
                 type="button"
                 onClick={() => setUserOpen((v) => !v)}
-                aria-expanded={userOpen}
-                aria-label="Menú de usuario"
-                className="flex items-center gap-2 rounded-full border border-cream-200 bg-white py-1.5 pl-1.5 pr-3 shadow-sm transition hover:bg-cream-50"
+                className="flex items-center gap-2 rounded-full border border-cream-200 bg-white py-1.5 pl-1.5 pr-3 transition hover:bg-cream-50"
               >
-                {session.user.image ? (
+                {profile.avatar_url ? (
                   <Image
-                    src={session.user.image}
-                    alt={session.user.name ?? "Avatar de usuario"}
+                    src={profile.avatar_url}
+                    alt=""
                     width={32}
                     height={32}
                     className="h-8 w-8 rounded-full object-cover"
-                    unoptimized
                   />
                 ) : (
                   <span className="flex h-8 w-8 items-center justify-center rounded-full bg-agro-600 text-sm font-bold text-white">
-                    {session.user.name?.[0]?.toUpperCase() ?? "U"}
+                    {profile.full_name?.[0]?.toUpperCase() ?? "U"}
                   </span>
                 )}
                 <span className="max-w-[8rem] truncate text-sm font-semibold text-stone-800">
-                  {session.user.name}
+                  {profile.full_name}
                 </span>
                 <ChevronDown
                   size={16}
@@ -126,27 +116,32 @@ export default function Navbar() {
                   }`}
                 />
               </button>
-
               {userOpen && (
                 <div className="absolute right-0 mt-2 w-56 overflow-hidden rounded-xl border border-cream-200 bg-white shadow-lg">
                   <div className="border-b border-cream-200 px-4 py-3">
                     <p className="truncate text-sm font-semibold text-stone-800">
-                      {session.user.name}
+                      {profile.full_name}
                     </p>
                     <span
                       className={`mt-1 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold ${
-                        session.user.role === "agricultor"
+                        profile.role === "agricultor"
                           ? "bg-agro-100 text-agro-800"
+                          : profile.role === "admin"
+                          ? "bg-soil-500/20 text-soil-800"
                           : "bg-sun-300/40 text-yellow-800"
                       }`}
                     >
-                      {session.user.role === "agricultor" ? (
+                      {profile.role === "agricultor" ? (
                         <Tractor size={12} />
-                      ) : (
+                      ) : profile.role === "comprador" ? (
                         <ShoppingCart size={12} />
+                      ) : (
+                        <User size={12} />
                       )}
-                      {session.user.role === "agricultor"
+                      {profile.role === "agricultor"
                         ? "Agricultor"
+                        : profile.role === "admin"
+                        ? "Administrador"
                         : "Comprador"}
                     </span>
                   </div>
@@ -159,7 +154,7 @@ export default function Navbar() {
                   </Link>
                   <button
                     type="button"
-                    onClick={() => signOut({ callbackUrl: "/" })}
+                    onClick={handleSignOut}
                     className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm font-medium text-red-600 transition hover:bg-red-50"
                   >
                     <LogOut size={16} /> Cerrar sesión
@@ -177,7 +172,7 @@ export default function Navbar() {
           )}
         </div>
 
-        {/* Notificaciones y menú móvil */}
+        {/* Mobile right */}
         <div className="flex items-center gap-1 md:hidden">
           <NotificationsDropdown />
           <button
@@ -185,14 +180,13 @@ export default function Navbar() {
             className="text-stone-700"
             onClick={() => setMobileOpen((v) => !v)}
             aria-label={mobileOpen ? "Cerrar menú" : "Abrir menú"}
-            aria-expanded={mobileOpen}
           >
             {mobileOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </div>
       </div>
 
-      {/* Menú Móvil */}
+      {/* Mobile menu */}
       {mobileOpen && (
         <div className="border-t border-cream-200 bg-white px-4 py-3 md:hidden">
           <nav className="flex flex-col gap-1">
@@ -204,23 +198,29 @@ export default function Navbar() {
                 className={`rounded-lg px-3 py-2 text-sm font-semibold ${
                   isActive(link.href)
                     ? "bg-agro-50 text-agro-700"
-                    : "text-stone-600 hover:bg-cream-100"
+                    : "text-stone-600"
                 }`}
               >
                 {link.label}
               </Link>
             ))}
-            {session?.user ? (
-              <button
-                type="button"
-                onClick={() => {
-                  setMobileOpen(false);
-                  signOut({ callbackUrl: "/" });
-                }}
-                className="mt-1 flex items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-semibold text-red-600 hover:bg-red-50"
-              >
-                <LogOut size={16} /> Cerrar sesión ({session.user.name})
-              </button>
+            {user && profile ? (
+              <>
+                <Link
+                  href="/perfil"
+                  onClick={() => setMobileOpen(false)}
+                  className="mt-1 flex items-center gap-2 rounded-lg bg-cream-50 px-3 py-2 text-sm font-semibold text-stone-700"
+                >
+                  <User size={16} /> {profile.full_name}
+                </Link>
+                <button
+                  type="button"
+                  onClick={handleSignOut}
+                  className="flex items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-semibold text-red-600 hover:bg-red-50"
+                >
+                  <LogOut size={16} /> Cerrar sesión
+                </button>
+              </>
             ) : (
               <Link
                 href="/login"
