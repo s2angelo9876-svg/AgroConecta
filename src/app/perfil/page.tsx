@@ -30,8 +30,12 @@ export default async function PerfilPage() {
     ...(isAgricultor
       ? [
           { href: "/mis-publicaciones", label: "Mis publicaciones", icon: Package },
+          { href: "/verificar", label: "Verificar mi cuenta", icon: ShieldCheck },
           { href: "/mapa", label: "Mapa de productores", icon: Map },
         ]
+      : []),
+    ...(role === "admin"
+      ? [{ href: "/admin", label: "Panel de administración", icon: ShieldCheck }]
       : []),
     { href: "/favoritos", label: "Mis favoritos", icon: Heart },
     { href: "/mensajes", label: "Mensajes", icon: MessageCircle },
@@ -60,11 +64,23 @@ export default async function PerfilPage() {
               className={`mt-1 inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-bold ${
                 isAgricultor
                   ? "bg-agro-100 text-agro-800"
+                  : role === "admin"
+                  ? "bg-soil-500/20 text-soil-800"
                   : "bg-sun-300/40 text-yellow-800"
               }`}
             >
-              {isAgricultor ? <Tractor size={12} /> : <ShoppingCart size={12} />}
-              {isAgricultor ? "Agricultor" : "Comprador"}
+              {isAgricultor ? (
+                <Tractor size={12} />
+              ) : role === "admin" ? (
+                <ShieldCheck size={12} />
+              ) : (
+                <ShoppingCart size={12} />
+              )}
+              {isAgricultor
+                ? "Agricultor"
+                : role === "admin"
+                ? "Administrador"
+                : "Comprador"}
             </span>
           </div>
         </div>
