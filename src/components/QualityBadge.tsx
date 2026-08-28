@@ -1,5 +1,5 @@
 import { Star, Leaf, Circle } from "lucide-react";
-import type { Quality } from "@/data/mock";
+import type { Quality } from "@/lib/schemas";
 
 const CONFIG: Record<Quality, { classes: string; Icon: typeof Star }> = {
   Premium: { classes: "bg-sun-300/50 text-yellow-800", Icon: Star },

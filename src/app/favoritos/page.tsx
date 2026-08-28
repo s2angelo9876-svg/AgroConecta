@@ -4,7 +4,6 @@ import { Heart } from "lucide-react";
 import { useProducts } from "@/components/ProductsProvider";
 import { useFavorites } from "@/components/FavoritesProvider";
 import ProductCard from "@/components/ProductCard";
-import { findFarmer } from "@/data/mock";
 
 export default function FavoritosPage() {
   const { products } = useProducts();
@@ -23,11 +22,7 @@ export default function FavoritosPage() {
       {favoriteProducts.length > 0 ? (
         <div className="mt-6 space-y-4">
           {favoriteProducts.map((product) => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              farmer={findFarmer(product.farmerId)}
-            />
+            <ProductCard key={product.id} product={product} />
           ))}
         </div>
       ) : (

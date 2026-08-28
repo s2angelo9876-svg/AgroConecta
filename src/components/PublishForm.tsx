@@ -16,7 +16,7 @@ import {
   PRODUCT_IMAGES,
   DEFAULT_PRODUCT_IMAGE,
   LOCATIONS,
-} from "@/data/mock";
+} from "@/lib/catalog";
 import { useProducts } from "./ProductsProvider";
 
 const QUALITIES = [
@@ -88,6 +88,11 @@ export default function PublishForm() {
     if (result.product) setPublishedId(result.product.id);
   };
 
+  const goGracias = () => {
+    if (!publishedId) return;
+    router.push(`/gracias?action=publicacion&id=${publishedId}`);
+  };
+
   if (publishedId) {
     return (
       <div className="mt-8 rounded-3xl border border-agro-200 bg-white p-10 text-center shadow-sm">
@@ -96,7 +101,7 @@ export default function PublishForm() {
           ¡Tu cosecha fue publicada!
         </h2>
         <p className="mx-auto mt-2 max-w-sm text-sm text-stone-500">
-          Se guardó en la base de datos (Supabase) y ya aparece en el catálogo.
+          Se guardó en Supabase y ya aparece en el catálogo.
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-3">
           <Link
@@ -105,6 +110,12 @@ export default function PublishForm() {
           >
             Ver mi publicación
           </Link>
+          <button
+            onClick={goGracias}
+            className="rounded-xl border-2 border-agro-700 px-6 py-3 text-sm font-bold text-agro-700 transition hover:bg-agro-50"
+          >
+            Finalizar
+          </button>
           <button
             onClick={() => {
               setPublishedId(null);
@@ -118,7 +129,7 @@ export default function PublishForm() {
                 quality: "Premium",
               });
             }}
-            className="rounded-xl border-2 border-agro-700 px-6 py-3 text-sm font-bold text-agro-700 transition hover:bg-agro-50"
+            className="rounded-xl bg-sun-400 px-6 py-3 text-sm font-bold text-stone-900 transition hover:bg-sun-300"
           >
             Publicar otra
           </button>
@@ -264,7 +275,9 @@ export default function PublishForm() {
             <Camera size={28} className="text-stone-400" />
           )}
           {preview ? "Cambiar fotografía" : "Agregar fotografía"}
-          <span className="text-xs">Demo: la foto se previsualiza pero no se sube al servidor.</span>
+          <span className="text-xs">
+            Demo: la foto se previsualiza pero no se sube al servidor.
+          </span>
         </button>
         <input
           ref={fileRef}

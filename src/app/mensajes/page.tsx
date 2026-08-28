@@ -1,57 +1,40 @@
-"use client";
-
-import Image from "next/image";
 import Link from "next/link";
-import { useCurrentUser } from "@/hooks/useCurrentUser";
-import { MOCK_CONVERSATIONS } from "@/data/conversations";
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, Sparkles } from "lucide-react";
+
+export const metadata = { title: "Mensajes — AgroConecta" };
 
 export default function MensajesPage() {
-  const { user } = useCurrentUser();
-
   return (
-    <section className="mx-auto max-w-2xl px-4 py-10 sm:px-6">
-      <h1 className="text-2xl font-extrabold text-agro-800">Mensajes</h1>
-      <p className="mt-1 text-sm text-stone-500">
-        {user
-          ? "Tus conversaciones con agricultores y compradores."
-          : "Inicia sesión para ver tus mensajes."}
+    <section className="mx-auto max-w-2xl px-4 py-16 text-center">
+      <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-agro-50 text-agro-700">
+        <MessageCircle size={28} />
+      </span>
+      <h1 className="mt-4 text-2xl font-extrabold text-agro-800">Mensajes</h1>
+      <p className="mx-auto mt-2 max-w-md text-sm text-stone-500">
+        El chat en tiempo real estará disponible próximamente. Por ahora, usa
+        los botones <strong>Contactar</strong> o <strong>Llamar</strong> en
+        cada producto para comunicarte directamente con el agricultor.
       </p>
 
-      <div className="mt-6 space-y-3">
-        {MOCK_CONVERSATIONS.map((conv) => (
-          <Link
-            key={conv.id}
-            href={`/mensajes/${conv.id}`}
-            className="flex items-center gap-4 rounded-2xl border border-cream-200 bg-white p-4 shadow-sm transition hover:shadow-md"
-          >
-            <Image
-              src={conv.avatar}
-              alt={conv.name}
-              width={56}
-              height={56}
-              className="h-14 w-14 rounded-full object-cover"
-            />
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center justify-between gap-2">
-                <p className="font-bold text-stone-800">{conv.name}</p>
-                {conv.unread && (
-                  <span className="h-2.5 w-2.5 rounded-full bg-sun-400" />
-                )}
-              </div>
-              <p className="text-xs font-semibold text-agro-600">
-                {conv.productName}
-              </p>
-              <p className="truncate text-sm text-stone-500">
-                {conv.lastMessage}
-              </p>
-            </div>
-            <MessageCircle
-              size={20}
-              className="shrink-0 text-stone-300"
-            />
-          </Link>
-        ))}
+      <div className="mx-auto mt-8 grid max-w-md grid-cols-2 gap-3">
+        <Link
+          href="/buscar"
+          className="rounded-xl bg-agro-700 px-4 py-3 text-sm font-bold text-white transition hover:bg-agro-600"
+        >
+          Buscar productos
+        </Link>
+        <Link
+          href="/favoritos"
+          className="rounded-xl border-2 border-agro-700 px-4 py-3 text-sm font-bold text-agro-700 transition hover:bg-agro-50"
+        >
+          Mis favoritos
+        </Link>
+      </div>
+
+      <div className="mx-auto mt-10 flex max-w-md items-start gap-2 rounded-2xl bg-cream-50 p-4 text-left text-xs text-stone-500">
+        <Sparkles size={14} className="mt-0.5 shrink-0 text-agro-600" />
+        El chat con Supabase Realtime / Pusher es la siguiente fase del
+        proyecto (ya está el modelo de datos en Supabase).
       </div>
     </section>
   );

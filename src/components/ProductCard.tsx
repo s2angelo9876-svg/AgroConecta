@@ -4,22 +4,21 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { MapPin, MessageCircle, Heart } from "lucide-react";
-import type { Farmer } from "@/data/mock";
 import type { UiProduct } from "@/lib/schemas";
 import QualityBadge from "./QualityBadge";
 import ContactModal from "./ContactModal";
+import VerifiedBadge from "./VerifiedBadge";
 import { useFavorites } from "./FavoritesProvider";
 
-export default function ProductCard({
-  product,
-  farmer,
-}: {
-  product: UiProduct;
-  farmer?: Farmer;
-}) {
+export default function ProductCard({ product }: { product: UiProduct }) {
   const [contactOpen, setContactOpen] = useState(false);
   const { isFavorite, toggleFavorite } = useFavorites();
   const favorite = isFavorite(product.id);
+
+  const farmerName = product.farmerSummary?.name ?? "Agricultor";
+  const farmerAvatar = product.farmerSummary?.avatar;
+  const farmerVerified = product.farmerSummary?.verified ?? false;
+  const farmerRating = product.farmerSummary?.rating ?? 0;
 
   return (
     <article className="flex gap-4 rounded-2xl border border-cream-200 bg-white p-3 shadow-sm transition hover:shadow-md">
@@ -42,6 +41,7 @@ export default function ProductCard({
             toggleFavorite(product.id);
           }}
           className="absolute right-2 top-2 rounded-full bg-white/80 p-1.5 text-stone-400 shadow-sm backdrop-blur transition hover:text-red-500"
+          aria-label={favorite ? "Quitar de favoritos" : "Agregar a favoritos"}
         >
           <Heart
             size={18}
@@ -56,6 +56,11 @@ export default function ProductCard({
         >
           {product.name}
         </Link>
+        {farmerVerified && (
+          <div className="mt-0.5">
+            <VerifiedBadge verified size="sm" />
+          </div>
+        )}
         <p className="mt-0.5 flex items-center gap-1 text-sm text-stone-500">
           <MapPin size={14} className="text-agro-600" /> {product.location}
         </p>
@@ -74,15 +79,15 @@ export default function ProductCard({
             onClick={() => setContactOpen(true)}
             className="inline-flex items-center gap-1.5 rounded-lg bg-agro-700 px-3 py-2 text-xs font-bold text-white transition hover:bg-agro-600"
           >
-            <MessageCircle size={14} /> Contactar agricultor
+            <MessageCircle size={14} /> Contactar
           </button>
         </div>
       </div>
       <ContactModal
         open={contactOpen}
         onClose={() => setContactOpen(false)}
-        farmerName={farmer?.name ?? product.farmerName ?? "Agricultor"}
-        phone={farmer?.phone}
+        farmerName={farmerName}
+        farmerAvatar={farmerAvatar}
       />
     </article>
   );

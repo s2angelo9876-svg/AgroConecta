@@ -6,6 +6,7 @@ import Providers from "@/components/Providers";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import MobileNav from "@/components/MobileNav";
+import MobileStickyCta from "@/components/MobileStickyCta";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -32,6 +33,7 @@ export default async function RootLayout({
           <main className="flex-1 pb-20 md:pb-0">{children}</main>
           <Footer />
           <MobileNav />
+          <MobileStickyCta />
         </Providers>
       </body>
     </html>

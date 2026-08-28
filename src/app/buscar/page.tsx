@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { Search, RotateCcw } from "lucide-react";
 import { useProducts } from "@/components/ProductsProvider";
 import ProductCard from "@/components/ProductCard";
-import { findFarmer, PRODUCT_OPTIONS, LOCATIONS } from "@/data/mock";
+import { PRODUCT_OPTIONS, LOCATIONS } from "@/lib/catalog";
 
 const inputCls =
   "w-full rounded-xl border border-stone-200 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-agro-500 focus:ring-2 focus:ring-agro-100";
@@ -126,11 +126,7 @@ export default function BuscarPage() {
       {results.length > 0 ? (
         <div className="mt-4 grid gap-4 lg:grid-cols-2">
           {results.map((product) => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              farmer={findFarmer(product.farmerId)}
-            />
+            <ProductCard key={product.id} product={product} />
           ))}
         </div>
       ) : (

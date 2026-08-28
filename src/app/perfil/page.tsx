@@ -38,7 +38,11 @@ export default async function PerfilPage() {
       ? [{ href: "/admin", label: "Panel de administración", icon: ShieldCheck }]
       : []),
     { href: "/favoritos", label: "Mis favoritos", icon: Heart },
-    { href: "/mensajes", label: "Mensajes", icon: MessageCircle },
+    {
+      href: "/mensajes",
+      label: "Mensajes (próximamente)",
+      icon: MessageCircle,
+    },
   ];
 
   return (

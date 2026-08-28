@@ -16,10 +16,12 @@ import {
   ShoppingBag,
 } from "lucide-react";
 import { useProducts } from "@/components/ProductsProvider";
-import { findFarmer } from "@/data/mock";
 import QualityBadge from "@/components/QualityBadge";
 import ContactModal from "@/components/ContactModal";
 import CheckoutModal from "@/components/CheckoutModal";
+import VerifiedBadge from "@/components/VerifiedBadge";
+import Breadcrumbs from "@/components/Breadcrumbs";
+import { ProductJsonLd } from "@/components/JsonLd";
 import { useFavorites } from "@/components/FavoritesProvider";
 
 export default function ProductDetailPage({
@@ -54,8 +56,12 @@ export default function ProductDetailPage({
     );
   }
 
-  const farmer = findFarmer(product.farmerId);
-  const farmerName = farmer?.name ?? product.farmerName ?? "Agricultor";
+  const farmerName = product.farmerSummary?.name ?? "Agricultor";
+  const farmerAvatar = product.farmerSummary?.avatar;
+  const farmerVerified = product.farmerSummary?.verified ?? false;
+  const farmerRating = product.farmerSummary?.rating ?? 0;
+  const farmerReviews = product.farmerSummary?.reviews ?? 0;
+  const farmerId = product.farmerId;
 
   const info = [
     {
@@ -77,9 +83,16 @@ export default function ProductDetailPage({
 
   return (
     <section className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
+      <Breadcrumbs
+        items={[
+          { label: "Inicio", href: "/" },
+          { label: "Buscar", href: "/buscar" },
+          { label: product.name },
+        ]}
+      />
       <Link
         href="/buscar"
-        className="inline-flex items-center gap-1.5 text-sm font-semibold text-agro-700 hover:underline"
+        className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-agro-700 hover:underline"
       >
         <ArrowLeft size={16} /> Volver a resultados
       </Link>
@@ -102,9 +115,11 @@ export default function ProductDetailPage({
               {product.name}
             </h1>
             <QualityBadge quality={product.quality} />
+            {farmerVerified && <VerifiedBadge verified />}
             <button
               type="button"
               onClick={() => toggleFavorite(product.id)}
+              aria-label={isFavorite(product.id) ? "Quitar de favoritos" : "Agregar a favoritos"}
               className="rounded-full border border-cream-200 p-2 text-stone-400 transition hover:text-red-500"
             >
               <Heart
@@ -142,39 +157,45 @@ export default function ProductDetailPage({
             <h2 className="text-sm font-bold uppercase tracking-wide text-stone-400">
               Descripción
             </h2>
-            <p className="mt-1 text-stone-600">{product.description}</p>
+            <p className="mt-1 text-stone-600">
+              {product.description || "Sin descripción."}
+            </p>
           </div>
 
-          <div className="mt-6 flex items-center gap-4 rounded-2xl border border-cream-200 bg-white p-4">
-            <Image
-              src={farmer?.avatar ?? product.image}
-              alt={farmerName}
-              width={56}
-              height={56}
-              className="h-14 w-14 rounded-full object-cover"
-            />
+          <Link
+            href={`/agricultor/${farmerId}`}
+            className="mt-6 flex items-center gap-4 rounded-2xl border border-cream-200 bg-white p-4 transition hover:border-agro-300"
+          >
+            {farmerAvatar ? (
+              <Image
+                src={farmerAvatar}
+                alt={farmerName}
+                width={56}
+                height={56}
+                className="h-14 w-14 rounded-full object-cover"
+              />
+            ) : (
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-agro-600 text-xl font-bold text-white">
+                {farmerName[0]?.toUpperCase() ?? "A"}
+              </div>
+            )}
             <div className="min-w-0 flex-1">
               <p className="flex items-center gap-1.5 font-bold text-stone-800">
                 {farmerName}
-                {farmer?.verified && (
+                {farmerVerified && (
                   <BadgeCheck size={16} className="shrink-0 text-agro-600" />
                 )}
               </p>
-              {farmer && (
+              {farmerRating > 0 && (
                 <p className="truncate text-sm text-stone-500">
-                  ⭐ {farmer.rating} ({farmer.reviews}) · {farmer.location}
+                  ⭐ {farmerRating} ({farmerReviews}) · {product.location}
                 </p>
               )}
             </div>
-            {farmer && (
-              <Link
-                href={`/agricultor/${farmer.id}`}
-                className="shrink-0 rounded-lg border border-agro-600 px-3 py-2 text-xs font-bold text-agro-700 transition hover:bg-agro-50"
-              >
-                Ver perfil
-              </Link>
-            )}
-          </div>
+            <span className="shrink-0 text-xs font-bold text-agro-700">
+              Ver perfil →
+            </span>
+          </Link>
 
           <div className="mt-6 flex flex-wrap gap-3">
             <button
@@ -189,12 +210,6 @@ export default function ProductDetailPage({
             >
               <Phone size={18} /> Contactar
             </button>
-            <Link
-              href="/mensajes/c1"
-              className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border-2 border-agro-700 px-6 py-3.5 font-bold text-agro-700 transition hover:bg-agro-50"
-            >
-              <MessageCircle size={18} /> Enviar mensaje
-            </Link>
           </div>
         </div>
       </div>
@@ -203,12 +218,21 @@ export default function ProductDetailPage({
         open={contactOpen}
         onClose={() => setContactOpen(false)}
         farmerName={farmerName}
-        phone={farmer?.phone}
+        farmerAvatar={farmerAvatar}
       />
       <CheckoutModal
         open={checkoutOpen}
         onClose={() => setCheckoutOpen(false)}
         product={product}
+      />
+      <ProductJsonLd
+        name={product.name}
+        description={product.description}
+        image={product.image}
+        price={product.price}
+        location={product.location}
+        farmerName={farmerName}
+        url={typeof window !== "undefined" ? window.location.href : ""}
       />
     </section>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   X,
   CreditCard,
@@ -48,6 +49,7 @@ export default function CheckoutModal({
   onClose: () => void;
   product: UiProduct;
 }) {
+  const router = useRouter();
   const [method, setMethod] = useState<Method>("yape");
   const [quantity, setQuantity] = useState(1);
   const [step, setStep] = useState<Step>("form");
@@ -68,6 +70,13 @@ export default function CheckoutModal({
   const pay = () => {
     setStep("procesando");
     setTimeout(() => setStep("exito"), 1500);
+  };
+
+  const goGracias = () => {
+    onClose();
+    router.push(
+      `/gracias?action=compra&id=${product.id}&qty=${quantity}&total=${total.toFixed(2)}`
+    );
   };
 
   const formatCardNumber = (value: string) =>
@@ -106,8 +115,14 @@ export default function CheckoutModal({
               confirmaría el pago vía webhook de la pasarela.
             </p>
             <button
-              onClick={onClose}
+              onClick={goGracias}
               className="mt-5 w-full rounded-xl bg-agro-700 px-4 py-3 text-sm font-bold text-white transition hover:bg-agro-600"
+            >
+              Ir a confirmación
+            </button>
+            <button
+              onClick={onClose}
+              className="mt-2 w-full rounded-xl border-2 border-stone-200 px-4 py-3 text-sm font-bold text-stone-700 transition hover:bg-cream-50"
             >
               Cerrar
             </button>

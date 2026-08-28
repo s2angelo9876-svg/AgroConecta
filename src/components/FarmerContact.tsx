@@ -9,7 +9,7 @@ export default function FarmerContact({
   phone,
 }: {
   farmerName: string;
-  phone: string;
+  phone?: string;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -23,7 +23,13 @@ export default function FarmerContact({
           <MessageCircle size={16} /> Chatear
         </button>
         <a
-          href={`tel:${phone.replace(/\s/g, "")}`}
+          href={
+            phone
+              ? `tel:${phone.replace(/\s/g, "")}`
+              : "https://wa.me/51987654321"
+          }
+          target={phone ? undefined : "_blank"}
+          rel={phone ? undefined : "noreferrer"}
           className="inline-flex items-center gap-2 rounded-xl border-2 border-stone-200 px-5 py-2.5 text-sm font-bold text-stone-600 transition hover:bg-cream-50"
         >
           <Phone size={16} /> Llamar

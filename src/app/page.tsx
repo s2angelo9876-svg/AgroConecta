@@ -12,9 +12,15 @@ import {
   Sun,
   Leaf,
   ArrowRight,
+  Star,
+  Clock,
+  ShieldCheck,
+  Quote,
 } from "lucide-react";
 import FeaturedProducts from "@/components/FeaturedProducts";
-import { HERO_IMAGE } from "@/data/mock";
+import { LocalBusinessJsonLd } from "@/components/JsonLd";
+import { createClient } from "@/lib/supabase/server";
+import { HERO_IMAGE } from "@/lib/catalog";
 
 const STEPS = [
   {
@@ -88,9 +94,18 @@ const BUYER_BENEFITS = [
   "Mayor variedad de productos",
 ];
 
-export default function Home() {
+export default async function Home() {
+  const supabase = await createClient();
+  const { data: testimonials } = await supabase
+    .from("testimonials")
+    .select("*")
+    .eq("published", true)
+    .order("created_at", { ascending: false })
+    .limit(3);
   return (
     <>
+      <LocalBusinessJsonLd />
+
       {/* HERO */}
       <section className="relative overflow-hidden">
         <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-14 sm:px-6 lg:grid-cols-2 lg:py-20">
@@ -119,6 +134,9 @@ export default function Home() {
               >
                 <Search size={20} /> Buscar productos
               </Link>
+            </div>
+            <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-white/60 px-3 py-1 text-xs font-semibold text-stone-700">
+              <Clock size={14} className="text-agro-600" /> Respondemos en menos de 24 horas
             </div>
           </div>
           <div className="relative">
@@ -277,6 +295,51 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* TESTIMONIOS */}
+      {testimonials && testimonials.length > 0 && (
+        <section className="bg-white py-14">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6">
+            <h2 className="text-center text-3xl font-extrabold text-agro-800">
+              Lo que dicen nuestros usuarios
+            </h2>
+            <p className="mx-auto mt-2 max-w-xl text-center text-sm text-stone-500">
+              Restaurantes, hoteles y compradores que encontraron su próxima
+              cosecha en AgroConecta.
+            </p>
+            <div className="mt-10 grid gap-6 md:grid-cols-3">
+              {testimonials.map((t) => (
+                <div
+                  key={t.id}
+                  className="relative rounded-2xl border border-cream-200 bg-cream-50 p-6"
+                >
+                  <Quote className="absolute right-4 top-4 text-agro-200" size={28} />
+                  <p className="text-sm italic text-stone-700">“{t.content}”</p>
+                  <div className="mt-4 flex items-center gap-3">
+                    <div className="flex h-1">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <Star
+                          key={i}
+                          size={14}
+                          className={
+                            i < t.rating
+                              ? "fill-sun-400 text-sun-400"
+                              : "text-stone-300"
+                          }
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  <p className="mt-3 font-bold text-stone-800">{t.author_name}</p>
+                  {t.author_role && (
+                    <p className="text-xs text-stone-500">{t.author_role}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* CTA FINAL */}
       <section className="pb-16">

@@ -1,7 +1,6 @@
 "use client";
 
 import { useProducts } from "./ProductsProvider";
-import { findFarmer } from "@/data/mock";
 import ProductCard from "./ProductCard";
 
 export default function MyProductsList({ userId }: { userId: string }) {
@@ -10,9 +9,8 @@ export default function MyProductsList({ userId }: { userId: string }) {
   const mine = products.filter((p) => p.farmerId === userId);
 
   const handleDelete = async (id: string) => {
-    if (confirm("¿Eliminar esta publicación?")) {
-      await removeProduct(id);
-    }
+    if (!confirm("¿Eliminar esta publicación?")) return;
+    await removeProduct(id);
   };
 
   if (mine.length === 0) {
@@ -27,10 +25,7 @@ export default function MyProductsList({ userId }: { userId: string }) {
     <div className="mt-8 space-y-4">
       {mine.map((product) => (
         <div key={product.id} className="relative">
-          <ProductCard
-            product={product}
-            farmer={findFarmer(product.farmerId)}
-          />
+          <ProductCard product={product} />
           <button
             disabled={loading}
             onClick={() => handleDelete(product.id)}

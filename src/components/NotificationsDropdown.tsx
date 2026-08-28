@@ -1,20 +1,25 @@
 "use client";
 
+import { Bell, Check } from "lucide-react";
 import { useState } from "react";
-import { Bell, X } from "lucide-react";
-import { MOCK_NOTIFICATIONS } from "@/data/notifications";
 
+interface NotificationItem {
+  id: string;
+  title: string;
+  message: string;
+  time: string;
+  read: boolean;
+}
+
+/**
+ * Dropdown de notificaciones. Por ahora muestra estado vacío; en la
+ * siguiente fase se conecta a la tabla `notifications` de Supabase.
+ */
 export default function NotificationsDropdown() {
   const [open, setOpen] = useState(false);
-  const [notifications, setNotifications] = useState(MOCK_NOTIFICATIONS);
+  const [notifications] = useState<NotificationItem[]>([]);
 
   const unread = notifications.filter((n) => !n.read).length;
-
-  const markRead = (id: string) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
-    );
-  };
 
   return (
     <div className="relative">
@@ -37,34 +42,17 @@ export default function NotificationsDropdown() {
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className="text-stone-400 transition hover:text-stone-600"
+              className="text-xs text-stone-400 hover:text-stone-600"
             >
-              <X size={16} />
+              Cerrar
             </button>
           </div>
-          <div className="max-h-80 overflow-y-auto">
-            {notifications.length === 0 ? (
-              <p className="p-4 text-center text-sm text-stone-500">
-                Sin notificaciones
-              </p>
-            ) : (
-              notifications.map((n) => (
-                <button
-                  key={n.id}
-                  type="button"
-                  onClick={() => markRead(n.id)}
-                  className={`flex w-full flex-col gap-1 border-b border-cream-100 px-4 py-3 text-left transition hover:bg-cream-50 ${
-                    !n.read ? "bg-agro-50/40" : ""
-                  }`}
-                >
-                  <p className="text-sm font-bold text-stone-800">{n.title}</p>
-                  <p className="text-xs text-stone-500">{n.message}</p>
-                  <p className="text-[10px] font-semibold text-agro-600">
-                    {n.time}
-                  </p>
-                </button>
-              ))
-            )}
+          <div className="p-6 text-center text-sm text-stone-500">
+            <Bell size={28} className="mx-auto text-stone-300" />
+            <p className="mt-2">Sin notificaciones</p>
+            <p className="mt-1 text-xs">
+              Te avisaremos cuando alguien compre o publique algo relevante.
+            </p>
           </div>
         </div>
       )}

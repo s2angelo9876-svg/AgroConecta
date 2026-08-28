@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 export const QualitySchema = z.enum(["Premium", "Primera", "Segunda"]);
+export type Quality = z.infer<typeof QualitySchema>;
 
 /**
  * Esquema para crear una publicación. `strict()` rechaza cualquier campo
@@ -22,6 +23,17 @@ export const productInputSchema = z
 
 export type ProductInput = z.infer<typeof productInputSchema>;
 
+/** Resumen del agricultor mostrado en cards y detalle. */
+export interface FarmerSummary {
+  id: string;
+  name: string;
+  avatar: string;
+  location: string;
+  verified: boolean;
+  rating: number;
+  reviews: number;
+}
+
 /** Producto unificado para la UI (camelCase). */
 export interface UiProduct {
   id: string;
@@ -35,5 +47,5 @@ export interface UiProduct {
   image: string;
   description: string;
   farmerId: string;
-  farmerName?: string;
+  farmerSummary?: FarmerSummary;
 }

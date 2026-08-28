@@ -4,15 +4,16 @@ import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Tractor, ShoppingCart, UserPlus, Loader2 } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
 import type { UserRole } from "@/hooks/useCurrentUser";
+import PasswordInput from "./PasswordInput";
+import TurnstileWidget from "./TurnstileWidget";
+import { registerAction } from "@/lib/actions/auth";
 
 const inputCls =
   "w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-agro-500 focus:ring-2 focus:ring-agro-100";
 
 export default function RegisterForm() {
   const router = useRouter();
-  const supabase = createClient();
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -21,6 +22,7 @@ export default function RegisterForm() {
     confirm: "",
   });
   const [role, setRole] = useState<Exclude<UserRole, "admin">>("agricultor");
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -33,14 +35,6 @@ export default function RegisterForm() {
       setError("Completa todos los campos obligatorios.");
       return;
     }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
-      setError("Ingresa un correo válido.");
-      return;
-    }
-    if (form.password.length < 6) {
-      setError("La contraseña debe tener al menos 6 caracteres.");
-      return;
-    }
     if (form.password !== form.confirm) {
       setError("Las contraseñas no coinciden.");
       return;
@@ -49,32 +43,21 @@ export default function RegisterForm() {
     setError("");
     setLoading(true);
 
-    const { error } = await supabase.auth.signUp({
+    const res = await registerAction({
       email: form.email.trim(),
       password: form.password,
-      options: {
-        data: {
-          full_name: form.name.trim(),
-          role,
-        },
-      },
+      name: form.name.trim(),
+      role,
+      turnstileToken: turnstileToken ?? undefined,
     });
 
     setLoading(false);
-
-    if (error) {
-      setError(
-        error.message.includes("already registered")
-          ? "Este correo ya está registrado. Inicia sesión."
-          : "No se pudo crear la cuenta. Intenta nuevamente."
-      );
+    if (!res.ok) {
+      setError(res.error);
       return;
     }
 
-    // Si tu proyecto Supabase requiere confirmación por email,
-    // Supabase no inicia sesión automáticamente. Aquí asumimos que el
-    // proyecto la tiene desactivada para el demo (Authentication > Sign In).
-    router.push(role === "agricultor" ? "/publicar" : "/");
+    router.push(res.role === "agricultor" ? "/publicar" : "/");
     router.refresh();
   };
 
@@ -142,6 +125,7 @@ export default function RegisterForm() {
           value={form.email}
           onChange={(e) => update("email")(e.target.value)}
           className={inputCls}
+          autoComplete="email"
         />
       </div>
 
@@ -163,27 +147,29 @@ export default function RegisterForm() {
           <label className="mb-1.5 block text-sm font-semibold">
             Contraseña
           </label>
-          <input
-            type="password"
-            placeholder="Mín. 6 caracteres"
+          <PasswordInput
             value={form.password}
-            onChange={(e) => update("password")(e.target.value)}
-            className={inputCls}
+            onChange={(v) => update("password")(v)}
+            placeholder="Mín. 6 caracteres"
+            minLength={6}
+            autoComplete="new-password"
           />
         </div>
         <div>
           <label className="mb-1.5 block text-sm font-semibold">
             Confirmar
           </label>
-          <input
-            type="password"
-            placeholder="Repite la contraseña"
+          <PasswordInput
             value={form.confirm}
-            onChange={(e) => update("confirm")(e.target.value)}
-            className={inputCls}
+            onChange={(v) => update("confirm")(v)}
+            placeholder="Repite la contraseña"
+            minLength={6}
+            autoComplete="new-password"
           />
         </div>
       </div>
+
+      <TurnstileWidget onVerify={setTurnstileToken} />
 
       {error && (
         <p className="rounded-lg bg-red-50 px-4 py-2 text-sm font-semibold text-red-600">
@@ -211,7 +197,7 @@ export default function RegisterForm() {
         </Link>
       </p>
       <p className="text-center text-xs text-stone-400">
-        La cuenta se crea en Supabase (Postgres con RLS).
+        Protegido con rate-limiting (5 intentos / 5 min) y captcha opcional.
       </p>
     </form>
   );
