@@ -40,14 +40,14 @@ export async function getUser() {
   return data.user;
 }
 
-/** Perfil del usuario (incluye role) o null. */
+/** Perfil del usuario (incluye role y teléfono) o null. */
 export async function getProfile() {
   const supabase = await createClient();
   const user = await getUser();
   if (!user) return null;
   const { data } = await supabase
     .from("profiles")
-    .select("id, full_name, role, avatar_url")
+    .select("id, full_name, role, avatar_url, phone")
     .eq("id", user.id)
     .single();
   return data;

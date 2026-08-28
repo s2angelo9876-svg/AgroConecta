@@ -8,11 +8,11 @@ import {
   Heart,
   Map,
   MessageCircle,
-  Settings,
   ShieldCheck,
 } from "lucide-react";
 import { getUser, getProfile } from "@/lib/supabase/server";
 import SignOutButton from "@/components/SignOutButton";
+import PerfilSettings from "@/components/PerfilSettings";
 
 export const metadata = { title: "Mi perfil — AgroConecta" };
 
@@ -106,9 +106,10 @@ export default async function PerfilPage() {
 
         <div className="mt-6 flex gap-3">
           <SignOutButton />
-          <button className="flex flex-1 items-center justify-center gap-2 rounded-xl border-2 border-stone-200 px-4 py-3 text-sm font-bold text-stone-600 transition hover:bg-cream-50">
-            <Settings size={16} /> Configuración
-          </button>
+          <PerfilSettings
+            currentName={fullName}
+            currentPhone={profile?.phone ?? ""}
+          />
         </div>
 
         <p className="mt-6 flex items-center justify-center gap-1.5 text-center text-xs text-stone-400">
