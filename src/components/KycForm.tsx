@@ -11,6 +11,8 @@ import {
   FileText,
   AlertCircle,
   Clock,
+  Pencil,
+  Sparkles,
 } from "lucide-react";
 import { lookupDniAction, submitVerificationAction } from "@/lib/actions/kyc";
 
@@ -19,11 +21,11 @@ const ACCEPTED_MIME = ["application/pdf", "image/jpeg", "image/png"] as const;
 
 export default function KycForm({ initialStatus }: { initialStatus: string }) {
   const router = useRouter();
-
   const [dni, setDni] = useState("");
   const [lookupName, setLookupName] = useState("");
   const [lookupLoading, setLookupLoading] = useState(false);
   const [lookupError, setLookupError] = useState("");
+  const [manualMode, setManualMode] = useState(false);
 
   const [nameConfirmed, setNameConfirmed] = useState(false);
   const [docType, setDocType] = useState<"ppa" | "recibo_agua">("ppa");
@@ -93,7 +95,6 @@ export default function KycForm({ initialStatus }: { initialStatus: string }) {
       return;
     }
 
-    // Subir el binario al bucket usando la URL firmada
     const uploadRes = await fetch(res.data.uploadUrl, {
       method: "PUT",
       body: file,
@@ -162,36 +163,133 @@ export default function KycForm({ initialStatus }: { initialStatus: string }) {
         <h3 className="flex items-center gap-2 text-sm font-bold uppercase text-agro-700">
           <Search size={16} /> 1. Validar tu DNI
         </h3>
-        <div className="mt-3 flex flex-wrap gap-3">
-          <input
-            type="text"
-            inputMode="numeric"
-            maxLength={8}
-            placeholder="Tu DNI (8 dígitos)"
-            value={dni}
-            onChange={(e) => setDni(e.target.value.replace(/\D/g, ""))}
-            className="w-44 rounded-xl border border-stone-200 bg-white px-4 py-2.5 text-sm outline-none focus:border-agro-500"
-          />
-          <button
-            type="button"
-            onClick={onLookup}
-            disabled={lookupLoading}
-            className="inline-flex items-center gap-2 rounded-xl bg-agro-700 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-agro-600 disabled:opacity-60"
-          >
-            {lookupLoading ? <Loader2 size={16} className="animate-spin" /> : <Search size={16} />}
-            Buscar en RENIEC
-          </button>
-        </div>
 
-        {lookupError && (
-          <p className="mt-3 flex items-center gap-2 text-sm text-red-600">
-            <AlertCircle size={16} /> {lookupError}
-          </p>
+        {!manualMode && (
+          <>
+            <div className="mt-3 flex flex-wrap gap-3">
+              <input
+                type="text"
+                inputMode="numeric"
+                maxLength={8}
+                placeholder="Tu DNI (8 dígitos)"
+                value={dni}
+                onChange={(e) => setDni(e.target.value.replace(/\D/g, ""))}
+                className="w-44 rounded-xl border border-stone-200 bg-white px-4 py-2.5 text-sm outline-none focus:border-agro-500"
+              />
+              <button
+                type="button"
+                onClick={onLookup}
+                disabled={lookupLoading}
+                className="inline-flex items-center gap-2 rounded-xl bg-agro-700 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-agro-600 disabled:opacity-60"
+              >
+                {lookupLoading ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  <Search size={16} />
+                )}
+                Buscar en RENIEC
+              </button>
+            </div>
+
+            {lookupError && (
+              <p className="mt-3 flex items-start gap-2 text-sm text-red-600">
+                <AlertCircle size={16} className="mt-0.5 shrink-0" />
+                <span>
+                  {lookupError}{" "}
+                  <button
+                    type="button"
+                    onClick={() => setManualMode(true)}
+                    className="font-bold text-stone-700 underline hover:text-agro-700"
+                  >
+                    Ingresar mi nombre manualmente
+                  </button>
+                </span>
+              </p>
+            )}
+
+            {!lookupError && (
+              <p className="mt-3 text-xs text-stone-500">
+                ¿La consulta no responde?{" "}
+                <button
+                  type="button"
+                  onClick={() => setManualMode(true)}
+                  className="font-bold text-agro-700 underline hover:text-agro-800"
+                >
+                  Ingresar mi nombre manualmente
+                </button>
+              </p>
+            )}
+          </>
         )}
 
-        {lookupName && (
+        {manualMode && (
+          <div className="mt-3 rounded-xl border border-yellow-300 bg-yellow-50 p-4">
+            <p className="flex items-center gap-2 text-xs font-bold text-yellow-800">
+              <Sparkles size={14} /> Modo manual (demo): escribe tu nombre como
+              aparece en tu DNI
+            </p>
+            <div className="mt-3 space-y-3">
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-stone-700">
+                  Tu DNI
+                </label>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={8}
+                  placeholder="Tu DNI (8 dígitos)"
+                  value={dni}
+                  onChange={(e) => setDni(e.target.value.replace(/\D/g, ""))}
+                  className="w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm outline-none focus:border-agro-500"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-stone-700">
+                  Nombre completo
+                </label>
+                <input
+                  type="text"
+                  placeholder="Tu nombre y apellidos"
+                  value={lookupName}
+                  onChange={(e) => {
+                    setLookupName(e.target.value);
+                    setNameConfirmed(false);
+                  }}
+                  className="w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm outline-none focus:border-agro-500"
+                />
+              </div>
+              <label className="flex items-start gap-2 text-xs">
+                <input
+                  type="checkbox"
+                  checked={nameConfirmed}
+                  onChange={(e) => setNameConfirmed(e.target.checked)}
+                  className="mt-0.5"
+                />
+                <span>
+                  Confirmo que <strong>{lookupName || "mi nombre"}</strong> es
+                  correcto
+                </span>
+              </label>
+              <button
+                type="button"
+                onClick={() => {
+                  setManualMode(false);
+                  setLookupName("");
+                  setNameConfirmed(false);
+                }}
+                className="mt-2 inline-flex items-center gap-1 text-xs text-stone-500 hover:text-stone-700"
+              >
+                <Search size={12} /> Volver a buscar en RENIEC
+              </button>
+            </div>
+          </div>
+        )}
+
+        {!manualMode && lookupName && (
           <div className="mt-4 rounded-xl bg-agro-50 p-4">
-            <p className="text-xs font-bold text-agro-700">Resultado de Decolecta / RENIEC</p>
+            <p className="text-xs font-bold text-agro-700">
+              Resultado de Decolecta / RENIEC
+            </p>
             <p className="mt-1 text-lg font-bold text-stone-800">{lookupName}</p>
             <label className="mt-3 flex items-start gap-2 text-sm">
               <input

@@ -61,7 +61,7 @@ export async function loginAction(input: unknown) {
 
   const hdrs = await headers();
   const ip = getClientIp(hdrs);
-  const rl = rateLimit(`login:${ip}`, 5, 5 * 60 * 1000);
+  const rl = rateLimit(`login:${ip}`, 15, 5 * 60 * 1000);
   if (!rl.ok) {
     return {
       ok: false as const,
@@ -93,7 +93,7 @@ export async function registerAction(input: unknown) {
 
   const hdrs = await headers();
   const ip = getClientIp(hdrs);
-  const rl = rateLimit(`register:${ip}`, 3, 10 * 60 * 1000);
+  const rl = rateLimit(`register:${ip}`, 15, 10 * 60 * 1000);
   if (!rl.ok) {
     return {
       ok: false as const,

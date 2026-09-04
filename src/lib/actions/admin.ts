@@ -87,14 +87,22 @@ export async function reviewVerificationAction(input: unknown) {
     .from("profiles")
     .select("full_name, email")
     .eq("id", doc.user_id)
-    .single();
-  if (profile?.email) {
+    .maybeSingle();
+
+  let targetEmail = profile?.email;
+  if (!targetEmail) {
+    const { data: authUser } = await admin.auth.admin.getUserById(doc.user_id);
+    targetEmail = authUser?.user?.email;
+  }
+
+  if (targetEmail) {
+    const name = profile?.full_name ?? "Agricultor";
     const template =
       decision === "verified"
-        ? verificationApprovedEmail(profile.full_name)
-        : verificationRejectedEmail(profile.full_name, notes ?? "No se especificó un motivo.");
+        ? verificationApprovedEmail(name)
+        : verificationRejectedEmail(name, notes ?? "No se especificó un motivo.");
     await sendEmail({
-      to: profile.email,
+      to: targetEmail,
       subject: template.subject,
       html: template.html,
     });

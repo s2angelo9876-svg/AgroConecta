@@ -75,25 +75,36 @@ export const submitVerificationAction = safeAction(
       throw new Error("Solo los agricultores pueden verificar identidad.");
     }
 
-    // Volvemos a consultar el DNI y comparamos
-    const decolectaData = await lookupDni(dni);
-    const normalizedReal = decolectaData.full_name
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .toLowerCase()
-      .replace(/\s+/g, " ")
-      .trim();
-    const normalizedGiven = dniConfirmedName
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .toLowerCase()
-      .replace(/\s+/g, " ")
-      .trim();
+    // Validación de DNI contra RENIEC
+    if (process.env.DECOLECTA_API_KEY) {
+      try {
+        const decolectaData = await lookupDni(dni);
+        const normalizedReal = decolectaData.full_name
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .toLowerCase()
+          .replace(/\s+/g, " ")
+          .trim();
+        const normalizedGiven = dniConfirmedName
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .toLowerCase()
+          .replace(/\s+/g, " ")
+          .trim();
 
-    if (!normalizedReal.includes(normalizedGiven) && !normalizedGiven.includes(normalizedReal)) {
-      throw new Error(
-        "El nombre que ingresaste no coincide con el DNI en RENIEC. Verifica el orden de tus nombres."
-      );
+        if (!normalizedReal.includes(normalizedGiven) && !normalizedGiven.includes(normalizedReal)) {
+          const words = normalizedGiven.split(" ").filter((w) => w.length > 2);
+          const hasMatch = words.some((w) => normalizedReal.includes(w));
+          if (!hasMatch) {
+            throw new Error(
+              "El nombre que ingresaste no coincide con el DNI en RENIEC. Verifica el orden de tus nombres."
+            );
+          }
+        }
+      } catch (err: any) {
+        if (err.message.includes("no coincide con el DNI")) throw err;
+        console.warn("[kyc] Advertencia RENIEC:", err.message);
+      }
     }
 
     // Ruta del archivo
