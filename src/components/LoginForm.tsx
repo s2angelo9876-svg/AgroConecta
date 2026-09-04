@@ -3,7 +3,8 @@
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { LogIn, Loader2 } from "lucide-react";
+import { LogIn, Tractor, ShoppingCart, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { loginAction } from "@/lib/actions/auth";
 import PasswordInput from "./PasswordInput";
 
@@ -31,6 +32,7 @@ export default function LoginForm({ callbackUrl }: { callbackUrl: string }) {
       setError(res.error);
       return;
     }
+    toast.success("Sesión iniciada");
     router.push(callbackUrl);
     router.refresh();
   };

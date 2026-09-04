@@ -14,6 +14,7 @@ export interface CurrentUserState {
     full_name: string;
     role: UserRole;
     avatar_url: string | null;
+    phone: string | null;
   } | null;
   loading: boolean;
 }
@@ -42,7 +43,7 @@ export function useCurrentUser(): CurrentUserState {
       }
       const { data: profile } = await supabase
         .from("profiles")
-        .select("id, full_name, role, avatar_url")
+        .select("id, full_name, role, avatar_url, phone")
         .eq("id", user.id)
         .single();
       setState({

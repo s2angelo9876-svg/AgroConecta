@@ -12,8 +12,13 @@ import {
   Tractor,
   ShoppingCart,
   User,
+  ShieldCheck,
+  Settings as SettingsIcon,
 } from "lucide-react";
+import { toast } from "sonner";
 import NotificationsDropdown from "./NotificationsDropdown";
+import GlobalSearch from "./GlobalSearch";
+import SettingsModal from "./SettingsModal";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { createClient } from "@/lib/supabase/client";
 
@@ -28,6 +33,7 @@ export default function Navbar() {
   const { user, profile, loading } = useCurrentUser();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userOpen, setUserOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const supabase = createClient();
 
   const isActive = (href: string) =>
@@ -38,12 +44,13 @@ export default function Navbar() {
     setUserOpen(false);
     setMobileOpen(false);
     await supabase.auth.signOut();
+    toast.success("Sesión cerrada");
     window.location.href = "/";
   };
 
   return (
     <header className="sticky top-0 z-40 border-b border-cream-200 bg-white/90 backdrop-blur">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
           <Image
@@ -66,6 +73,7 @@ export default function Navbar() {
 
         {/* Desktop nav */}
         <nav className="hidden items-center gap-1 md:flex">
+          <GlobalSearch />
           {LINKS.map((link) => (
             <Link
               key={link.href}
@@ -81,7 +89,7 @@ export default function Navbar() {
           ))}
         </nav>
 
-        {/* Right area */}
+        {/* Right area (desktop) */}
         <div className="hidden items-center gap-2 md:flex">
           <NotificationsDropdown />
           {loading ? (
@@ -154,6 +162,25 @@ export default function Navbar() {
                   </Link>
                   <button
                     type="button"
+                    onClick={() => {
+                      setUserOpen(false);
+                      setSettingsOpen(true);
+                    }}
+                    className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm font-medium text-stone-700 transition hover:bg-cream-50"
+                  >
+                    <SettingsIcon size={16} /> Configuración
+                  </button>
+                  {profile.role === "admin" && (
+                    <Link
+                      href="/admin"
+                      onClick={() => setUserOpen(false)}
+                      className="flex w-full items-center gap-2 bg-agro-50 px-4 py-2.5 text-left text-sm font-bold text-agro-800 transition hover:bg-agro-100"
+                    >
+                      <ShieldCheck size={16} /> Panel de administración
+                    </Link>
+                  )}
+                  <button
+                    type="button"
                     onClick={handleSignOut}
                     className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm font-medium text-red-600 transition hover:bg-red-50"
                   >
@@ -173,7 +200,8 @@ export default function Navbar() {
         </div>
 
         {/* Mobile right */}
-        <div className="flex items-center gap-1 md:hidden">
+        <div className="flex items-center gap-2 md:hidden">
+          <GlobalSearch />
           <NotificationsDropdown />
           <button
             type="button"
@@ -213,6 +241,15 @@ export default function Navbar() {
                 >
                   <User size={16} /> {profile.full_name}
                 </Link>
+                {profile.role === "admin" && (
+                  <Link
+                    href="/admin"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex items-center gap-2 rounded-lg bg-agro-50 px-3 py-2 text-sm font-bold text-agro-800"
+                  >
+                    <ShieldCheck size={16} /> Panel de administración
+                  </Link>
+                )}
                 <button
                   type="button"
                   onClick={handleSignOut}
@@ -233,6 +270,13 @@ export default function Navbar() {
           </nav>
         </div>
       )}
+
+      <SettingsModal
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        currentName={profile?.full_name ?? ""}
+        currentPhone={profile?.phone ?? ""}
+      />
     </header>
   );
 }

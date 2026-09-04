@@ -42,6 +42,11 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // Indica a Turbopack (y a next) que el workspace root es esta carpeta,
+  // no el padre donde también hay un package-lock.json (silencia warning).
+  turbopack: {
+    root: process.cwd(),
+  },
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com" },

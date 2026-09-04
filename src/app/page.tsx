@@ -16,10 +16,12 @@ import {
   Clock,
   ShieldCheck,
   Quote,
+  HelpCircle,
 } from "lucide-react";
 import FeaturedProducts from "@/components/FeaturedProducts";
 import { LocalBusinessJsonLd } from "@/components/JsonLd";
 import { createClient } from "@/lib/supabase/server";
+import { getPublishedFaqsAction } from "@/lib/actions/faq";
 import { HERO_IMAGE } from "@/lib/catalog";
 
 const STEPS = [
@@ -96,12 +98,16 @@ const BUYER_BENEFITS = [
 
 export default async function Home() {
   const supabase = await createClient();
-  const { data: testimonials } = await supabase
-    .from("testimonials")
-    .select("*")
-    .eq("published", true)
-    .order("created_at", { ascending: false })
-    .limit(3);
+  const [testimonialsRes, faqs] = await Promise.all([
+    supabase
+      .from("testimonials")
+      .select("*")
+      .eq("published", true)
+      .order("created_at", { ascending: false })
+      .limit(3),
+    getPublishedFaqsAction(),
+  ]);
+  const testimonials = testimonialsRes.data;
   return (
     <>
       <LocalBusinessJsonLd />
@@ -336,6 +342,50 @@ export default async function Home() {
                   )}
                 </div>
               ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* PREGUNTAS FRECUENTES */}
+      {faqs.length > 0 && (
+        <section className="bg-white py-14">
+          <div className="mx-auto max-w-3xl px-4 sm:px-6">
+            <div className="text-center">
+              <span className="inline-flex items-center gap-2 rounded-full bg-agro-50 px-3 py-1 text-xs font-bold uppercase tracking-wider text-agro-700">
+                <HelpCircle size={14} /> Preguntas frecuentes
+              </span>
+              <h2 className="mt-3 text-3xl font-extrabold text-agro-800">
+                ¿Tienes dudas? Aquí las resolvemos
+              </h2>
+            </div>
+            <div className="mt-8 space-y-3">
+              {faqs.slice(0, 4).map((f) => (
+                <details
+                  key={f.id}
+                  className="group rounded-2xl border border-cream-200 bg-cream-50 p-4 transition open:bg-white open:shadow-sm"
+                >
+                  <summary className="flex cursor-pointer items-start justify-between gap-3 list-none [&::-webkit-details-marker]:hidden">
+                    <span className="flex-1 text-sm font-bold text-stone-800">
+                      {f.question}
+                    </span>
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white text-stone-500 transition group-open:rotate-45">
+                      +
+                    </span>
+                  </summary>
+                  <p className="mt-3 border-t border-cream-100 pt-3 text-sm text-stone-600">
+                    {f.answer}
+                  </p>
+                </details>
+              ))}
+            </div>
+            <div className="mt-6 text-center">
+              <Link
+                href="/preguntas-frecuentes"
+                className="text-sm font-bold text-agro-700 hover:underline"
+              >
+                Ver todas las preguntas →
+              </Link>
             </div>
           </div>
         </section>

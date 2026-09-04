@@ -11,6 +11,7 @@ import {
   CheckCircle2,
   CloudUpload,
 } from "lucide-react";
+import { toast } from "sonner";
 import {
   PRODUCT_OPTIONS,
   PRODUCT_IMAGES,
@@ -86,6 +87,7 @@ export default function PublishForm() {
     }
 
     if (result.product) setPublishedId(result.product.id);
+    toast.success("¡Cosecha publicada!");
   };
 
   const goGracias = () => {

@@ -10,6 +10,7 @@ import {
   Loader2,
   ShieldCheck,
 } from "lucide-react";
+import { toast } from "sonner";
 import type { UiProduct } from "@/lib/schemas";
 import FakeQR from "./FakeQR";
 
@@ -69,7 +70,10 @@ export default function CheckoutModal({
 
   const pay = () => {
     setStep("procesando");
-    setTimeout(() => setStep("exito"), 1500);
+    setTimeout(() => {
+      setStep("exito");
+      toast.success("¡Pago procesado correctamente!");
+    }, 1500);
   };
 
   const goGracias = () => {
@@ -77,6 +81,13 @@ export default function CheckoutModal({
     router.push(
       `/gracias?action=compra&id=${product.id}&qty=${quantity}&total=${total.toFixed(2)}`
     );
+  };
+
+  // Cuando el modal se cierra tras un pago exitoso, también llevamos
+  // al usuario a /gracias. Cubre el caso de "Cerrar" sin perder el éxito.
+  const handleCloseAfterPayment = () => {
+    onClose();
+    goGracias();
   };
 
   const formatCardNumber = (value: string) =>
@@ -121,7 +132,7 @@ export default function CheckoutModal({
               Ir a confirmación
             </button>
             <button
-              onClick={onClose}
+              onClick={handleCloseAfterPayment}
               className="mt-2 w-full rounded-xl border-2 border-stone-200 px-4 py-3 text-sm font-bold text-stone-700 transition hover:bg-cream-50"
             >
               Cerrar

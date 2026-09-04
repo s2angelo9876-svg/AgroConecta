@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Tractor, ShoppingCart, UserPlus, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import type { UserRole } from "@/hooks/useCurrentUser";
 import PasswordInput from "./PasswordInput";
 import TurnstileWidget from "./TurnstileWidget";
@@ -57,7 +58,17 @@ export default function RegisterForm() {
       return;
     }
 
-    router.push(res.role === "agricultor" ? "/publicar" : "/");
+    // Supabase requiere confirmación de email → no hay sesión todavía
+    if ("requiresEmailConfirmation" in res && res.requiresEmailConfirmation) {
+      setError(
+        "✅ Cuenta creada. Revisa tu correo electrónico para confirmarla y poder iniciar sesión."
+      );
+      toast.success("Cuenta creada. Revisa tu correo 📬");
+      return;
+    }
+
+    toast.success("Cuenta creada. ¡Bienvenido a AgroConecta!");
+    router.push(role === "agricultor" ? "/publicar" : "/");
     router.refresh();
   };
 
@@ -172,7 +183,13 @@ export default function RegisterForm() {
       <TurnstileWidget onVerify={setTurnstileToken} />
 
       {error && (
-        <p className="rounded-lg bg-red-50 px-4 py-2 text-sm font-semibold text-red-600">
+        <p
+          className={`rounded-lg px-4 py-2 text-sm font-semibold ${
+            error.startsWith("✅")
+              ? "bg-agro-50 text-agro-800"
+              : "bg-red-50 text-red-600"
+          }`}
+        >
           {error}
         </p>
       )}

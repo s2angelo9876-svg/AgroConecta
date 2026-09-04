@@ -1,3 +1,4 @@
+import Link from "next/link";
 import Image from "next/image";
 import {
   Mail,
@@ -6,15 +7,16 @@ import {
   Facebook,
   Instagram,
   MessageCircle,
+  HelpCircle,
 } from "lucide-react";
 
 export default function Footer() {
   const year = new Date().getFullYear();
   return (
     <footer className="bg-agro-900 text-agro-50">
-      <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:px-6 md:grid-cols-3">
+      <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:px-6 md:grid-cols-4">
         <div>
-          <div className="flex items-center gap-2">
+          <Link href="/" className="flex items-center gap-2">
             <span className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-white p-1">
               <Image
                 src="/logo-mark.png"
@@ -28,13 +30,40 @@ export default function Footer() {
               <span className="text-agro-200">Agro</span>
               <span className="text-sun-400">Conecta</span>
             </span>
-          </div>
+          </Link>
           <p className="mt-4 text-lg font-semibold text-white">
             ¡Gracias por usar AgroConecta!
           </p>
           <p className="mt-1 text-sm text-agro-200">
             Del campo al comprador, sin intermediarios.
           </p>
+        </div>
+        <div>
+          <h3 className="text-sm font-bold uppercase tracking-wider text-agro-200">
+            Producto
+          </h3>
+          <ul className="mt-4 space-y-3 text-sm">
+            <li>
+              <Link href="/buscar" className="hover:text-sun-400">
+                Buscar productos
+              </Link>
+            </li>
+            <li>
+              <Link href="/publicar" className="hover:text-sun-400">
+                Publicar cosecha
+              </Link>
+            </li>
+            <li>
+              <Link href="/mapa" className="hover:text-sun-400">
+                Mapa de productores
+              </Link>
+            </li>
+            <li>
+              <Link href="/preguntas-frecuentes" className="hover:text-sun-400">
+                Preguntas frecuentes
+              </Link>
+            </li>
+          </ul>
         </div>
         <div>
           <h3 className="text-sm font-bold uppercase tracking-wider text-agro-200">
@@ -53,21 +82,33 @@ export default function Footer() {
           </ul>
         </div>
         <div>
-          <h3 className="text-sm font-bold uppercase tracking-wider text-agro-200">
+<h3 className="text-sm font-bold uppercase tracking-wider text-agro-200">
             Síguenos
           </h3>
           <div className="mt-4 flex gap-3">
-            {[Facebook, Instagram, MessageCircle].map((Icon, i) => (
+            {[
+              { Icon: Facebook, label: "Facebook", url: "https://facebook.com/agroconecta" },
+              { Icon: Instagram, label: "Instagram", url: "https://instagram.com/agroconecta" },
+              { Icon: MessageCircle, label: "WhatsApp", url: "https://wa.me/51987654321" },
+            ].map(({ Icon, label, url }) => (
               <a
-                key={i}
-                href="#"
-                aria-label="Red social"
+                key={label}
+                href={url}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={label}
                 className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 transition hover:bg-white/20"
               >
                 <Icon size={18} />
               </a>
             ))}
           </div>
+          <Link
+            href="/preguntas-frecuentes"
+            className="mt-4 inline-flex items-center gap-1.5 text-xs text-agro-200 hover:text-sun-400"
+          >
+            <HelpCircle size={14} /> ¿Tienes dudas?
+          </Link>
         </div>
       </div>
       <div className="border-t border-white/10 bg-agro-950/40 py-4 text-center text-xs text-agro-200">

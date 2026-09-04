@@ -94,3 +94,22 @@ export function verificationRejectedEmail(fullName: string, reason: string) {
     </body></html>`,
   };
 }
+
+export function passwordResetEmail(link: string) {
+  return {
+    subject: "🔒 Restablece tu contraseña — AgroConecta",
+    html: `<!DOCTYPE html><html><head><style>${baseStyles}</style></head><body>
+      <div class="container">
+        <div class="header"><h1>🔒 Restablece tu contraseña</h1></div>
+        <div class="content">
+          <p>Recibimos una solicitud para restablecer la contraseña de tu cuenta en AgroConecta.</p>
+          <p>Haz click en el siguiente botón para crear una nueva contraseña. El enlace expira en <strong>1 hora</strong>.</p>
+          <a href="${link}" class="button">Restablecer contraseña</a>
+          <p style="margin-top: 20px; font-size: 13px; color: #8d8475;">Si no solicitaste este cambio, puedes ignorar este correo de forma segura.</p>
+          <p style="font-size: 12px; color: #a89e8e;">Si el botón no funciona, copia y pega este enlace:<br><span style="word-break: break-all; font-family: monospace;">${link}</span></p>
+        </div>
+        <div class="footer">© ${new Date().getFullYear()} AgroConecta</div>
+      </div>
+    </body></html>`,
+  };
+}

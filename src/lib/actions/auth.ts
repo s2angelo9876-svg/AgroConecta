@@ -5,6 +5,8 @@ import { createClient } from "@/lib/supabase/server";
 import { headers } from "next/headers";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
 import { captureException } from "@/lib/sentry";
+import { sendEmail } from "@/lib/email";
+import { welcomeEmail } from "@/lib/email-templates";
 
 const loginSchema = z
   .object({
@@ -105,7 +107,7 @@ export async function registerAction(input: unknown) {
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email: parsed.data.email,
     password: parsed.data.password,
     options: {
@@ -124,5 +126,28 @@ export async function registerAction(input: unknown) {
         : "No se pudo crear la cuenta.",
     };
   }
+
+  // Si Supabase requiere confirmación de email, NO hay sesión todavía.
+  // Devolvemos requiresEmailConfirmation para que el cliente muestre un
+  // mensaje claro en vez de redirigir a una página "sin sesión".
+  if (!data.session) {
+    // Email de bienvenida (no bloquea el flujo)
+    await sendEmail({
+      to: parsed.data.email,
+      ...welcomeEmail(parsed.data.name),
+    });
+    return {
+      ok: true as const,
+      role: parsed.data.role,
+      requiresEmailConfirmation: true as const,
+    };
+  }
+
+  // Email de bienvenida (no bloquea el flujo)
+  await sendEmail({
+    to: parsed.data.email,
+    ...welcomeEmail(parsed.data.name),
+  });
+
   return { ok: true as const, role: parsed.data.role };
 }
