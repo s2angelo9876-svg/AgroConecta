@@ -19,7 +19,13 @@ import { lookupDniAction, submitVerificationAction } from "@/lib/actions/kyc";
 const MAX_SIZE = 5 * 1024 * 1024;
 const ACCEPTED_MIME = ["application/pdf", "image/jpeg", "image/png"] as const;
 
-export default function KycForm({ initialStatus }: { initialStatus: string }) {
+export default function KycForm({
+  hasPendingDoc = false,
+  initialStatus,
+}: {
+  hasPendingDoc?: boolean;
+  initialStatus?: string;
+}) {
   const router = useRouter();
   const [dni, setDni] = useState("");
   const [lookupName, setLookupName] = useState("");
@@ -33,7 +39,9 @@ export default function KycForm({ initialStatus }: { initialStatus: string }) {
   const [fileError, setFileError] = useState("");
   const [submitLoading, setSubmitLoading] = useState(false);
   const [submitError, setSubmitError] = useState("");
-  const [submitted, setSubmitted] = useState(initialStatus === "pending");
+  const [submitted, setSubmitted] = useState(
+    hasPendingDoc || (initialStatus === "pending" && hasPendingDoc)
+  );
 
   const onLookup = async () => {
     setLookupError("");

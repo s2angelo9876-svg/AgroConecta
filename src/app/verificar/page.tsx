@@ -33,14 +33,24 @@ export default async function VerificarPage() {
     );
   }
 
-  // Traer estado actual de verificación
+  // Traer perfil de agricultor
   const { data: fp } = await supabase
     .from("farmer_profiles")
-    .select("verification_status")
+    .select("verification_status, verified")
     .eq("user_id", user.id)
     .maybeSingle();
 
-  const status = fp?.verification_status ?? "pending";
+  // Consultar si realmente tiene un documento subido
+  const { data: latestDoc } = await supabase
+    .from("verification_docs")
+    .select("status")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  const isVerified = fp?.verified === true || fp?.verification_status === "verified";
+  const hasPendingDoc = latestDoc?.status === "pending";
 
   return (
     <section className="mx-auto max-w-2xl px-4 py-10 sm:px-6">
@@ -54,18 +64,20 @@ export default async function VerificarPage() {
 
       <div className="mt-4 rounded-2xl border border-cream-200 bg-cream-50 p-4 text-sm">
         Estado actual:{" "}
-        {status === "verified" ? (
+        {isVerified ? (
           <span className="inline-flex items-center gap-1 font-bold text-agro-700">
             <BadgeCheck size={16} /> Verificado
           </span>
-        ) : status === "rejected" ? (
+        ) : latestDoc?.status === "rejected" ? (
           <span className="font-bold text-red-600">Rechazado — vuelve a intentarlo</span>
+        ) : hasPendingDoc ? (
+          <span className="font-bold text-yellow-700">Documento en revisión</span>
         ) : (
-          <span className="font-bold text-yellow-700">Pendiente de revisión</span>
+          <span className="font-bold text-stone-600">Sin verificar — completa el formulario</span>
         )}
       </div>
 
-      {status !== "verified" && <KycForm initialStatus={status} />}
+      {!isVerified && <KycForm hasPendingDoc={hasPendingDoc} />}
     </section>
   );
 }
