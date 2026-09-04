@@ -2,6 +2,7 @@
 
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   Loader2,
   CheckCircle2,
@@ -9,6 +10,7 @@ import {
   Upload,
   FileText,
   AlertCircle,
+  Clock,
 } from "lucide-react";
 import { lookupDniAction, submitVerificationAction } from "@/lib/actions/kyc";
 
@@ -109,15 +111,46 @@ export default function KycForm({ initialStatus }: { initialStatus: string }) {
 
   if (submitted) {
     return (
-      <div className="mt-6 rounded-3xl border border-agro-200 bg-white p-10 text-center shadow-sm">
-        <CheckCircle2 size={56} className="mx-auto text-agro-600" />
-        <h2 className="mt-4 text-xl font-extrabold text-agro-800">
-          ¡Documentos enviados!
-        </h2>
-        <p className="mx-auto mt-2 max-w-md text-sm text-stone-500">
-          Nuestro equipo revisará tu verificación en menos de 24 horas hábiles.
-          Te avisaremos por email cuando sea aprobada o rechazada.
-        </p>
+      <div className="mt-6 space-y-5">
+        <div className="rounded-3xl border border-yellow-300 bg-yellow-50 p-8 text-center">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-yellow-200">
+            <Clock size={28} className="text-yellow-700" />
+          </div>
+          <h2 className="mt-4 text-xl font-extrabold text-yellow-900">
+            Solicitud enviada — pendiente de revisión
+          </h2>
+          <p className="mx-auto mt-2 max-w-md text-sm text-yellow-800">
+            Tu solicitud fue recibida. Un administrador la revisará en menos de
+            24 horas hábiles y te avisaremos por email cuando sea aprobada o
+            rechazada.
+          </p>
+        </div>
+
+        <div className="rounded-2xl border border-cream-200 bg-cream-50 p-5">
+          <h3 className="text-sm font-bold text-stone-800">
+            ¿Cuándo me aprueban?
+          </h3>
+          <ul className="mt-3 space-y-2 text-xs text-stone-600">
+            <li>✓ Tu DNI fue validado contra RENIEC</li>
+            <li>✓ Tu documento fue subido de forma segura</li>
+            <li>⏳ Pendiente: revisión manual del administrador</li>
+            <li>⏳ Pendiente: badge de &ldquo;Agricultor Verificado&rdquo;</li>
+          </ul>
+          <p className="mt-4 text-xs text-stone-500">
+            Mientras esperas, puedes publicar productos. Aparecerán con tu
+            nombre normalmente. Una vez aprobado, aparecerán con el badge de
+            confianza.
+          </p>
+        </div>
+
+        <div className="text-center">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 rounded-xl bg-agro-700 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-agro-600"
+          >
+            Volver al inicio
+          </Link>
+        </div>
       </div>
     );
   }
